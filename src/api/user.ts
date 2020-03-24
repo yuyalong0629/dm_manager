@@ -1,6 +1,6 @@
 import { axios } from '@/utils/request'
 import qs from 'qs'
-import { Api } from '../types/api'
+import { Api, Login } from '../types/api'
 
 /**
  * @description: 用户信息 API
@@ -10,21 +10,34 @@ import { Api } from '../types/api'
  */
 
 const api: Api = {
-  login: '/api/gologin'
+  login: '/api/login',
+  logout: '/api/logout'
 }
-
 
 /**
  * @description: 登录
- * @param {Object} parameter [用户名 | 密码]
+ * @param {string} username [用户名]
+ * @param {string} password [密码]
  * @return: Login
  */
 
-export function Login(parameter: any) {
+export function Login(parameter: Login) {
   return axios({
-    method: 'get',
+    method: 'post',
     url: api.login,
     data: qs.stringify(parameter)
   })
 }
 
+/**
+ * @description: 退出登录
+ * @param {*}
+ * @return: Logout
+ */
+
+export function Logout() {
+  return axios({
+    method: 'get',
+    url: api.logout
+  })
+}

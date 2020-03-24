@@ -3,10 +3,13 @@ import { Component, Vue } from 'vue-property-decorator'
 @Component
 export default class Breadcrumb extends Vue {
   render() {
+    const breadcrumb = this.$route.meta.title
+
     return (
       <a-breadcrumb>
-        <a-breadcrumb-item>员工管理</a-breadcrumb-item>
-        <a-breadcrumb-item>系统设置</a-breadcrumb-item>
+        {breadcrumb.map((item: any) => {
+          return <a-breadcrumb-item>{item}</a-breadcrumb-item>
+        })}
       </a-breadcrumb>
     )
   }

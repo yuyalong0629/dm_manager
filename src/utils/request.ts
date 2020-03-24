@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import axios from 'axios'
+import router from '../router'
 import { VueAxios } from './axios'
 import { message } from 'ant-design-vue'
 
@@ -29,6 +30,10 @@ service.interceptors.request.use(config => {
 
 // response interceptor
 service.interceptors.response.use(response => {
+  if (response.data.code === 0) {
+    window.localStorage.clear()
+    router.replace({ path: '/user/login' })
+  }
   return response.data
 }, err)
 

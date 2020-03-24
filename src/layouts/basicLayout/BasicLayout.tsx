@@ -5,6 +5,7 @@ import Breadcrumb from '@/components/HeaderMenu/Breadcrumb'
 import Logo from '@/components/Logo/Logo'
 
 import './index.less'
+import router from '@/router'
 
 @Component({
   components: {
@@ -22,7 +23,7 @@ export default class BasicLayout extends Vue {
 
   public render() {
     return (
-      <a-layout id="manager-basicLayout" style={{ height: '100vh' }}>
+      <a-layout id="manager-basicLayout" style={{ 'min-height': '100vh' }}>
         <a-layout-sider
           trigger={null}
           collapsible
@@ -42,11 +43,11 @@ export default class BasicLayout extends Vue {
           </a-layout-header>
 
           <a-layout-content style={{ margin: '12px 12px 0', padding: '12px', background: '#fff', minHeight: '280px' }}>
-            Content
+            <router-view />
           </a-layout-content>
 
           <a-layout-footer style="text-align: center">
-            Ant Design ©2018 Created by Ant UED
+            Copyright ©2016 杭州羽联信息科技有限公司 版权所有 浙ICP备16045182号 技术支持: 大美传媒技术部
           </a-layout-footer>
         </a-layout>
 

@@ -38,7 +38,7 @@ module.exports = {
     historyApiFallback: true,
     proxy: {
       '/api': {
-        target: 'http://hsyapi.hsydata.com',
+        target: 'http://192.168.0.107:8089',
         ws: false,
         changeOrigin: true,
         pathRewrite: {

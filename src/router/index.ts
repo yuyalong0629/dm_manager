@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
+import store from '../store/index'
 import NProgress from 'nprogress' // progress bar
 import '@/components/NProgress/nprogress.less' // progress bar custom style
 import { constantRouterMap, asyncRouterMap } from './router.map'
@@ -25,11 +26,12 @@ const defaultRoutePath = '/index/management'
 
 router.beforeEach((to: any, from, next) => {
   NProgress.start() // start progress bar
-  if (Vue.ls.get('ACCESS_TOKEN')) {
+  if (Vue.ls.get('USER_INFO')) {
     if (to.path === '/user/login') {
       next({ path: defaultRoutePath })
       NProgress.done()
     } else {
+      const userInfo = store.getters.GET_STORAGE
       next()
     }
   } else {

@@ -1,4 +1,7 @@
 import { Component, Vue } from 'vue-property-decorator'
+import { Mutation } from 'vuex-class'
+import { Login } from '@/api/user'
+import { timeFix } from '@/utils/tools'
 
 interface FormErr {
   username?: {
@@ -18,6 +21,7 @@ interface FormValues {
 export default class User extends Vue {
   private form!: any
   private loginBtn!: boolean
+  @Mutation SET_LOGIN!: (params: any) => void
 
   private data() {
     return {
@@ -26,16 +30,31 @@ export default class User extends Vue {
     }
   }
 
+  // Form 提交
   private handleSubmit(e: any) {
     e.preventDefault()
     this.loginBtn = true
 
     this.form.validateFields((err: FormErr, values: FormValues) => {
       if (!err) {
-        console.log('Received values of form: ', values)
-        this.$ls.set('ACCESS_TOKEN', true)
-        this.$router.push({ path: '/' })
-        this.loginBtn = false
+        Login(values).then((res: any) => {
+          if (res.code === 200) {
+            this.SET_LOGIN(res.userInfoMap)
+
+            this.$router.push({ path: '/' })
+            // 延迟 1 秒显示欢迎信息
+            setTimeout(() => {
+              this.$notification.success({
+                message: '欢迎',
+                description: `${timeFix()}，欢迎回来`
+              })
+            }, 1000)
+          } else {
+            this.$message.error(res.message)
+          }
+        }).finally(() => {
+          this.loginBtn = false
+        })
       } else {
         setTimeout(() => {
           this.loginBtn = false
