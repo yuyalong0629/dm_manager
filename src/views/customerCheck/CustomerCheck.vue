@@ -15,13 +15,13 @@
             </a-form-model-item>
           </a-col>
 
-          <a-col :span="5">
+          <!-- <a-col :span="5">
             <a-form-model-item label="所属销售" prop="saleId">
               <a-select style="width: 180px" v-model="form.saleId" placeholder="请选择所属销售">
                 <a-select-option v-for="item of saListlists" :key="item.value">{{ item.label }}</a-select-option>
               </a-select>
             </a-form-model-item>
-          </a-col>
+          </a-col>-->
         </a-row>
 
         <a-row>
@@ -37,13 +37,13 @@
             </a-form-model-item>
           </a-col>
 
-          <a-col :span="5" v-if="isSelect">
+          <!-- <a-col :span="5" v-if="isSelect">
             <a-form-model-item label="所属渠道" prop="finId">
               <a-select style="width: 180px" v-model="form.finId" placeholder="请选择所属销售">
                 <a-select-option v-for="item of lists" :key="item.value">{{ item.label }}</a-select-option>
               </a-select>
             </a-form-model-item>
-          </a-col>
+          </a-col>-->
 
           <a-col :span="6">
             <a-form-model-item label>
@@ -56,41 +56,47 @@
           </a-col>
         </a-row>
       </a-form-model>
-      <a-divider orientation="left">
-        总渠道成本：
-        <a href="javascript:;">{{costs}}</a>
-      </a-divider>
-      <div class="channel-order-date" v-if="isSelect">
-        <a-button type="primary" @click="handleYesterday">查看昨日</a-button>
-        <a-button style="margin: 0 12px;" type="primary" @click="handleMonthOrder">当月订单</a-button>
-        <a-button type="primary" @click="handleMonthSchedule">当月排期</a-button>
-      </div>
+      <a-divider orientation="left">订单信息列表</a-divider>
+      <a-descriptions size="small" :column="12">
+        <a-descriptions-item label="总流水">
+          <a>{{ turnovers }}</a>
+        </a-descriptions-item>
+        <a-descriptions-item label="总成本">
+          <a>{{ costs }}</a>
+        </a-descriptions-item>
+        <a-descriptions-item label="总毛利润">
+          <a>{{ profits }}</a>
+        </a-descriptions-item>
+        <a-descriptions-item label="总销项税">
+          <a>{{ outputTaxs }}</a>
+        </a-descriptions-item>
+        <a-descriptions-item label="总返点">
+          <a>{{ rebates }}</a>
+        </a-descriptions-item>
+        <a-descriptions-item label="总净利润">
+          <a>{{ finalProfits }}</a>
+        </a-descriptions-item>
+        <a-descriptions-item label="总利润点">
+          <a>{{ profitPoints }}</a>
+        </a-descriptions-item>
+      </a-descriptions>
       <a-table :columns="columns" :dataSource="dataSource" :pagination="false">
         <span
           slot="taxType"
           slot-scope="text"
         >{{ text === 1 ? '专三' : text === 2 ? '专六' : text === 3 ? '普票' : '不含税' }}</span>
         <span slot="edit" slot-scope="text, recored">
-          <a-tooltip placement="left" title="查看">
+          <a-tooltip
+            v-if="recored.orderStatus === 0 && (JSON.parse($ls.get('USER_INFO')).id) !== recored.operateAdminId"
+            placement="top"
+            title="审核"
+          >
             <a-tag
-              @click="handleOrder(recored, false)"
-              color="#00a0e9"
+              @click="handleCheck(recored)"
+              color="#87d068"
               :style="{ 'font-size': '16px', cursor: 'pointer' }"
             >
-              <a-icon type="search" />
-            </a-tag>
-          </a-tooltip>
-          <a-tooltip placement="right" title="编辑">
-            <a-tag
-              color="#87d068"
-              @click="handleOrder(recored, true)"
-              :style="{
-                    'font-size': '16px',
-                    'margin-right': '8px',
-                    cursor: 'pointer'
-                  }"
-            >
-              <a-icon type="edit" />
+              <a-icon type="check" />
             </a-tag>
           </a-tooltip>
         </span>
@@ -104,33 +110,15 @@
         @change="onChangePage"
       />
     </a-spin>
-
-    <a-drawer
-      :title="title"
-      placement="right"
-      destroyOnClose
-      :maskClosable="false"
-      width="30%"
-      :closable="false"
-      @close="onClose"
-      :visible="visible"
-    >
-      <Order :recored="recored" @onClose="onClose" />
-    </a-drawer>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
-import { channelOrder, adminFinList } from '@/api/channel'
-import Order from './Order.vue'
+import { channelOrder, adminFinList, confirmOrder } from '@/api/channel'
 import moment from 'moment'
 
-@Component({
-  components: {
-    Order
-  }
-})
+@Component
 export default class ChannelOrder extends Vue {
   private spinning!: boolean
   private form!: any
@@ -140,11 +128,14 @@ export default class ChannelOrder extends Vue {
   private lists!: any
   private columns!: any
   private dataSource!: any
-  private costs!: string
-  private visible!: boolean
-  private recored!: any
   private isSelect!: boolean
-  private title!: string
+  private costs!: string
+  private turnovers!: string
+  private profits!: string
+  private finalProfits!: string
+  private rebates!: string
+  private outputTaxs!: string
+  private profitPoints!: string
 
   private data() {
     return {
@@ -159,7 +150,7 @@ export default class ChannelOrder extends Vue {
         orderEndTime: undefined, //  订单截止时间
         scheduleStartTime: undefined, //  排期起始时间
         scheduleEndTime: undefined, //  排期截止时间
-        orderState: 'a' //  排期截止时间
+        orderState: 'b' //  排期截止时间
       },
       columns: [
         {
@@ -178,8 +169,8 @@ export default class ChannelOrder extends Vue {
           align: 'center'
         },
         {
-          title: '订单成本',
-          dataIndex: 'cost',
+          title: '回款客户',
+          dataIndex: 'customName',
           align: 'center'
         },
         {
@@ -193,29 +184,48 @@ export default class ChannelOrder extends Vue {
           align: 'center'
         },
         {
-          title: '定金',
-          dataIndex: 'payment',
+          title: '流水',
+          dataIndex: 'turnover',
           align: 'center'
         },
         {
-          title: '税款类型',
-          dataIndex: 'taxType',
-          scopedSlots: { customRender: 'taxType' },
+          title: '成本',
+          dataIndex: 'cost',
+          align: 'center'
+        },
+        {
+          title: '毛利润',
+          dataIndex: 'profit',
+          align: 'center'
+        },
+        {
+          title: '利润点',
+          dataIndex: 'profitPoint',
+          align: 'center'
+        },
+        {
+          title: '销项税',
+          dataIndex: 'outputTax',
+          align: 'center'
+        },
+        {
+          title: '进项税',
+          dataIndex: 'taxation',
+          align: 'center'
+        },
+        {
+          title: '返点',
+          dataIndex: 'rebate',
+          align: 'center'
+        },
+        {
+          title: '净利润',
+          dataIndex: 'finalProfit',
           align: 'center'
         },
         {
           title: '所属渠道',
           dataIndex: 'channelName',
-          align: 'center'
-        },
-        {
-          title: '所属销售',
-          dataIndex: 'saleName',
-          align: 'center'
-        },
-        {
-          title: '所属客户',
-          dataIndex: 'customName',
           align: 'center'
         },
         {
@@ -231,11 +241,14 @@ export default class ChannelOrder extends Vue {
       current: 1,
       saListlists: [],
       lists: [],
-      costs: '0',
-      visible: false,
-      recored: null,
       isSelect: false,
-      title: '查看详情'
+      costs: undefined,
+      turnovers: undefined,
+      profits: undefined,
+      finalProfits: undefined,
+      rebates: undefined,
+      outputTaxs: undefined,
+      profitPoints: undefined
     }
   }
 
@@ -267,21 +280,21 @@ export default class ChannelOrder extends Vue {
     if (USER_INFO.isManager === 1) {
       this.getChannelOrder(form)
       this.isSelect = true
+      return
     }
     // 主管
     if (USER_INFO.isManager === 2) {
-      form.finId = USER_INFO.id
+      form.saleId = USER_INFO.id
       this.getChannelOrder(form)
       this.isSelect = true
       this.form = form
+      return
     }
-    if (USER_INFO.isManager === 0) {
-      // 普通
-      form.finId = USER_INFO.id
-      this.getChannelOrder(form)
-      this.isSelect = false
-      this.form = form
-    }
+    // 普通
+    form.saleId = USER_INFO.id
+    this.getChannelOrder(form)
+    this.isSelect = false
+    this.form = form
   }
 
   // 订单日期
@@ -306,79 +319,39 @@ export default class ChannelOrder extends Vue {
     }
   }
 
-  // 查看昨日
-  private handleYesterday() {
-    const { form } = this
-    if (form) {
-      form.orderStartTime = moment()
-        .subtract(1, 'days')
-        .format('YYYY-MM-DD')
-      form.orderEndTime = moment()
-        .subtract(1, 'days')
-        .format('YYYY-MM-DD')
-
-      form.scheduleStartTime = undefined
-      form.scheduleEndTime = undefined
-      form.finId = undefined
-
-      form.pageNo = 0
-      this.getChannelOrder(form)
-      this.form = form
+  // 审核
+  private handleCheck(recored: any) {
+    const params = {
+      orderId: recored.id,
+      operate: 1,
+      operateState: 1
     }
+    confirmOrder(params).then((res: any) => {
+      if (res.code === 200) {
+        this.$message.success(res.message)
+        const { form } = this
+        this.getChannelOrder(form)
+      } else {
+        this.$message.error(res.message)
+      }
+    })
   }
 
-  // 查看当月订单
-  private handleMonthOrder() {
-    const { form } = this
-    if (form) {
-      form.orderStartTime = moment()
-        .startOf('month')
-        .format('YYYY-MM-DD')
-      form.orderEndTime = moment()
-        .endOf('month')
-        .format('YYYY-MM-DD')
-
-      form.scheduleStartTime = undefined
-      form.scheduleEndTime = undefined
-      form.finId = undefined
-
-      form.pageNo = 0
-      this.getChannelOrder(form)
-      this.form = form
+  // 删除
+  private handleDelete(recored: any) {
+    const params = {
+      orderId: recored.id,
+      operate: 2,
+      operateState: 1
     }
-  }
-
-  // 查看当月排期
-  private handleMonthSchedule() {
-    const { form } = this
-    if (form) {
-      form.scheduleStartTime = moment()
-        .startOf('month')
-        .format('YYYY-MM-DD')
-      form.scheduleEndTime = moment()
-        .endOf('month')
-        .format('YYYY-MM-DD')
-
-      form.orderStartTime = undefined
-      form.orderEndTime = undefined
-      form.finId = undefined
-
-      form.pageNo = 0
-      this.getChannelOrder(form)
-
-      this.form = form
-    }
-  }
-
-  // 关闭抽屉
-  private onClose(isClose: boolean) {
-    new Promise((resolve, reject) => {
-      this.visible = isClose
-      resolve()
-    }).then(() => {
-      const { form } = this
-      this.getChannelOrder(form)
-      this.form = form
+    confirmOrder(params).then((res: any) => {
+      if (res.code === 200) {
+        this.$message.success(res.message)
+        const { form } = this
+        this.getChannelOrder(form)
+      } else {
+        this.$message.error(res.message)
+      }
     })
   }
 
@@ -415,6 +388,12 @@ export default class ChannelOrder extends Vue {
         if (res.code === 200) {
           this.spinning = false
           this.costs = res.costs
+          this.turnovers = res.turnovers
+          this.profits = res.profits
+          this.finalProfits = res.finalProfits
+          this.rebates = res.rebates
+          this.outputTaxs = res.outputTaxs
+          this.profitPoints = res.profitPoints
           this.dataSource = res.page.result.map((item: any) => {
             return {
               ...item,
@@ -429,18 +408,6 @@ export default class ChannelOrder extends Vue {
       .finally(() => {
         this.spinning = false
       })
-  }
-
-  // 查看订单
-  private handleOrder(recored: any, isEdit: boolean) {
-    this.visible = true
-    if (isEdit) {
-      this.recored = { ...recored, isEdit: true }
-      this.title = '编辑详情'
-    } else {
-      this.recored = { ...recored, isEdit: false }
-      this.title = '查看详情'
-    }
   }
 
   // 分页

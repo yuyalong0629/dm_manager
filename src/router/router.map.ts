@@ -37,7 +37,7 @@ export const asyncRouterMap = [
       {
         path: '/index/rank',
         name: 'rank',
-        meta: { title: ['员工管理', '龙虎榜'], hidden: false },
+        meta: { title: ['销售部门', '销售龙虎榜'], hidden: false },
         component: () => import('@/views/rank/Rank')
       },
       {
@@ -113,6 +113,24 @@ export const asyncRouterMap = [
         component: () => import('@/views/customerLive/CustomerAccounts.vue')
       },
       {
+        path: '/index/customerSearch',
+        name: 'customerSearch',
+        meta: { title: ['销售部门', '销售查询'], hidden: false },
+        component: () => import('@/views/channelSearch/ChannelSearch.vue')
+      },
+      {
+        path: '/index/customerOrder',
+        name: 'customerOrder',
+        meta: { title: ['销售部门', '销售订单'], hidden: false },
+        component: () => import('@/views/customerOrder/CustomerOrder.vue')
+      },
+      {
+        path: '/index/customerCheck',
+        name: 'customerCheck',
+        meta: { title: ['销售部门', '销售审核'], hidden: false },
+        component: () => import('@/views/customerCheck/CustomerCheck.vue')
+      },
+      {
         path: '/index/channelAccounts',
         name: 'channelAccounts',
         meta: { title: ['渠道部门', '渠道公众号'], hidden: false },
@@ -171,6 +189,18 @@ export const asyncRouterMap = [
         name: 'channelOrder',
         meta: { title: ['渠道部门', '渠道订单'], hidden: false },
         component: () => import('@/views/channelOrder/ChannelOrder.vue')
+      },
+      {
+        path: '/index/channelCheck',
+        name: 'channelCheck',
+        meta: { title: ['渠道部门', '渠道审核'], hidden: false },
+        component: () => import('@/views/channelCheck/ChannelOrder.vue')
+      },
+      {
+        path: '/index/channelRank',
+        name: 'channelRank',
+        meta: { title: ['渠道部门', '渠道龙虎榜'], hidden: false },
+        component: () => import('@/views/channelRank/Rank')
       }
     ]
   }

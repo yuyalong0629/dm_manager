@@ -42,7 +42,7 @@ export default class Rank extends Vue {
   private mounted() {
     this.spinning = true
 
-    rank({ type: 1 }).then((res: any) => {
+    rank({ type: 2 }).then((res: any) => {
       if (res.code === 200) {
         this.timePercent = res.timePercent
         this.firstSales = res.firstSales

@@ -15,6 +15,7 @@ import {
   Dropdown,
   Divider,
   DatePicker,
+  Descriptions,
   Drawer,
   Form,
   FormModel,
@@ -29,6 +30,7 @@ import {
   message,
   notification,
   Pagination,
+  PageHeader,
   Row,
   Select,
   Spin,
@@ -53,6 +55,7 @@ Vue.use(Col)
 Vue.use(Dropdown)
 Vue.use(Divider)
 Vue.use(DatePicker)
+Vue.use(Descriptions)
 Vue.use(Drawer)
 Vue.use(Form)
 Vue.use(FormModel)
@@ -65,6 +68,7 @@ Vue.use(ConfigProvider)
 Vue.use(Menu)
 Vue.use(Modal)
 Vue.use(Pagination)
+Vue.use(PageHeader)
 Vue.use(Row)
 Vue.use(Select)
 Vue.use(Switch)

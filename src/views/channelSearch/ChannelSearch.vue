@@ -38,7 +38,7 @@ export default class ChannelSearch extends Vue {
   private data() {
     return {
       spinning: false,
-      total: 100,
+      total: 10,
       current: 1,
       columns: [
         {
@@ -91,8 +91,8 @@ export default class ChannelSearch extends Vue {
             }
           })
 
-          this.total = res.page.count
-          this.current = res.page.index + 1
+          this.total = +res.page.count
+          this.current = +res.page.index + 1
         }
       })
       .finally(() => {
@@ -110,7 +110,7 @@ export default class ChannelSearch extends Vue {
   private onChangePage(pageNumber: number) {
     this.getCustomerIndex({
       accountName: this.accountName,
-      pageNo: pageNumber - 1
+      pageNo: +pageNumber - 1
     })
   }
 }

@@ -6,7 +6,9 @@ const api: Api = {
   addOrUpdate: '/api/accont/addOrUpdate',
   channelDetail: '/api/account/detail',
   channelOrder: '/api/order/index',
-  adminFinList: '/api/order/adminFinList'
+  adminFinList: '/api/order/adminFinList',
+  orderDetail: '/api/order/detail',
+  confirmOrder: '/api/order/confirmOrder'
 }
 
 /**
@@ -50,6 +52,7 @@ export function adminFinList(parameter: any) {
     params: parameter
   })
 }
+
 /**
  * @description: 渠道部门 => 渠道订单 => 详情
  * @param {*}
@@ -60,6 +63,34 @@ export function channelDetail(parameter: any) {
   return axios({
     method: 'get',
     url: api.channelDetail,
+    params: parameter
+  })
+}
+
+/**
+ * @description: 渠道部门 => 渠道订单 => 详情
+ * @param {*}
+ * @return: orderDetail
+ */
+
+export function orderDetail(parameter: any) {
+  return axios({
+    method: 'get',
+    url: api.orderDetail,
+    params: parameter
+  })
+}
+
+/**
+ * @description: 渠道部门 => 渠道审核 => 审核
+ * @param {*}
+ * @return: confirmOrder
+ */
+
+export function confirmOrder(parameter: any) {
+  return axios({
+    method: 'get',
+    url: api.confirmOrder,
     params: parameter
   })
 }

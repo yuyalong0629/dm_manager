@@ -43,9 +43,6 @@ export default class SideMenu extends Vue {
 
   // menu
   private onSelectKey({ item, key, selectedKeys }: any) {
-    // console.log(item)
-    // console.log(key)
-    // console.log(selectedKeys)
     this.selectedKeys = selectedKeys
     this.$ls.set('MENU', { openKeys: this.openKeys, selectedKeys: this.selectedKeys })
   }
@@ -68,9 +65,6 @@ export default class SideMenu extends Vue {
           </a-menu-item>
           <a-menu-item key="2">
             <router-link to="/index/information">员工信息</router-link>
-          </a-menu-item>
-          <a-menu-item key="3">
-            <router-link to="/index/rank">龙虎榜</router-link>
           </a-menu-item>
         </a-sub-menu>
         <a-sub-menu key="sub2">
@@ -105,6 +99,12 @@ export default class SideMenu extends Vue {
           <a-menu-item key="13">
             <router-link to="/index/channelOrder">渠道订单</router-link>
           </a-menu-item>
+          <a-menu-item key="14">
+            <router-link to="/index/channelCheck">渠道审核</router-link>
+          </a-menu-item>
+          <a-menu-item key="15">
+            <router-link to="/index/channelRank">渠道龙虎榜</router-link>
+          </a-menu-item>
         </a-sub-menu>
         <a-sub-menu key="sub3">
           <span slot="title"><a-icon type="shopping-cart" /><span>销售部门</span></span>
@@ -136,7 +136,19 @@ export default class SideMenu extends Vue {
             <router-link to="/index/customerLive">销售直播</router-link>
           </a-menu-item>
           <a-menu-item key="15">
+            <router-link to="/index/customerSearch">销售查询</router-link>
+          </a-menu-item>
+          <a-menu-item key="16">
+            <router-link to="/index/customerOrder">销售订单</router-link>
+          </a-menu-item>
+          <a-menu-item key="17">
+            <router-link to="/index/customerCheck">销售审核</router-link>
+          </a-menu-item>
+          <a-menu-item key="18">
             <router-link to="/index/customerPublicBank">客户公库</router-link>
+          </a-menu-item>
+          <a-menu-item key="19">
+            <router-link to="/index/rank">销售龙虎榜</router-link>
           </a-menu-item>
         </a-sub-menu>
       </a-menu>

@@ -16,9 +16,9 @@
           </a-col>
 
           <a-col :span="5">
-            <a-form-model-item label="所属销售" prop="saleId">
+            <a-form-model-item v-if="isBtn" label="所属销售" prop="saleId">
               <a-select style="width: 180px" v-model="form.saleId" placeholder="请选择所属销售">
-                <a-select-option v-for="item of saListlists" :key="item.value">{{ item.label }}</a-select-option>
+                <a-select-option v-for="item of lists" :key="item.value">{{ item.label }}</a-select-option>
               </a-select>
             </a-form-model-item>
           </a-col>
@@ -37,14 +37,6 @@
             </a-form-model-item>
           </a-col>
 
-          <a-col :span="5" v-if="isSelect">
-            <a-form-model-item label="所属渠道" prop="finId">
-              <a-select style="width: 180px" v-model="form.finId" placeholder="请选择所属销售">
-                <a-select-option v-for="item of lists" :key="item.value">{{ item.label }}</a-select-option>
-              </a-select>
-            </a-form-model-item>
-          </a-col>
-
           <a-col :span="6">
             <a-form-model-item label>
               <a-button
@@ -56,11 +48,31 @@
           </a-col>
         </a-row>
       </a-form-model>
-      <a-divider orientation="left">
-        总渠道成本：
-        <a href="javascript:;">{{costs}}</a>
-      </a-divider>
-      <div class="channel-order-date" v-if="isSelect">
+      <a-divider orientation="left">订单信息列表</a-divider>
+      <a-descriptions size="small" :column="12">
+        <a-descriptions-item label="总流水">
+          <a>{{ turnovers }}</a>
+        </a-descriptions-item>
+        <a-descriptions-item label="总成本">
+          <a>{{ costs }}</a>
+        </a-descriptions-item>
+        <a-descriptions-item label="总毛利润">
+          <a>{{ profits }}</a>
+        </a-descriptions-item>
+        <a-descriptions-item label="总销项税">
+          <a>{{ outputTaxs }}</a>
+        </a-descriptions-item>
+        <a-descriptions-item label="总返点">
+          <a>{{ rebates }}</a>
+        </a-descriptions-item>
+        <a-descriptions-item label="总净利润">
+          <a>{{ finalProfits }}</a>
+        </a-descriptions-item>
+        <a-descriptions-item label="总利润点">
+          <a>{{ profitPoints }}</a>
+        </a-descriptions-item>
+      </a-descriptions>
+      <div class="channel-order-date" v-if="isBtn">
         <a-button type="primary" @click="handleYesterday">查看昨日</a-button>
         <a-button style="margin: 0 12px;" type="primary" @click="handleMonthOrder">当月订单</a-button>
         <a-button type="primary" @click="handleMonthSchedule">当月排期</a-button>
@@ -80,7 +92,7 @@
               <a-icon type="search" />
             </a-tag>
           </a-tooltip>
-          <a-tooltip placement="right" title="编辑">
+          <a-tooltip v-if="isSelect" placement="top" title="编辑">
             <a-tag
               color="#87d068"
               @click="handleOrder(recored, true)"
@@ -91,6 +103,19 @@
                   }"
             >
               <a-icon type="edit" />
+            </a-tag>
+          </a-tooltip>
+          <a-tooltip placement="right" title="删除">
+            <a-tag
+              color="#f50"
+              @click="handleDelete(recored)"
+              :style="{
+                    'font-size': '16px',
+                    'margin-right': '8px',
+                    cursor: 'pointer'
+                  }"
+            >
+              <a-icon type="delete" />
             </a-tag>
           </a-tooltip>
         </span>
@@ -110,7 +135,7 @@
       placement="right"
       destroyOnClose
       :maskClosable="false"
-      width="30%"
+      width="40%"
       :closable="false"
       @close="onClose"
       :visible="visible"
@@ -136,15 +161,21 @@ export default class ChannelOrder extends Vue {
   private form!: any
   private total!: number
   private current!: number
-  private saListlists!: any
   private lists!: any
   private columns!: any
   private dataSource!: any
-  private costs!: string
   private visible!: boolean
   private recored!: any
   private isSelect!: boolean
+  private isBtn!: boolean
   private title!: string
+  private costs!: string
+  private turnovers!: string
+  private profits!: string
+  private finalProfits!: string
+  private rebates!: string
+  private outputTaxs!: string
+  private profitPoints!: string
 
   private data() {
     return {
@@ -178,8 +209,8 @@ export default class ChannelOrder extends Vue {
           align: 'center'
         },
         {
-          title: '订单成本',
-          dataIndex: 'cost',
+          title: '回款客户',
+          dataIndex: 'customName',
           align: 'center'
         },
         {
@@ -193,29 +224,48 @@ export default class ChannelOrder extends Vue {
           align: 'center'
         },
         {
-          title: '定金',
-          dataIndex: 'payment',
+          title: '流水',
+          dataIndex: 'turnover',
           align: 'center'
         },
         {
-          title: '税款类型',
-          dataIndex: 'taxType',
-          scopedSlots: { customRender: 'taxType' },
+          title: '成本',
+          dataIndex: 'cost',
+          align: 'center'
+        },
+        {
+          title: '毛利润',
+          dataIndex: 'profit',
+          align: 'center'
+        },
+        {
+          title: '利润点',
+          dataIndex: 'profitPoint',
+          align: 'center'
+        },
+        {
+          title: '销项税',
+          dataIndex: 'outputTax',
+          align: 'center'
+        },
+        {
+          title: '进项税',
+          dataIndex: 'taxation',
+          align: 'center'
+        },
+        {
+          title: '返点',
+          dataIndex: 'rebate',
+          align: 'center'
+        },
+        {
+          title: '净利润',
+          dataIndex: 'finalProfit',
           align: 'center'
         },
         {
           title: '所属渠道',
           dataIndex: 'channelName',
-          align: 'center'
-        },
-        {
-          title: '所属销售',
-          dataIndex: 'saleName',
-          align: 'center'
-        },
-        {
-          title: '所属客户',
-          dataIndex: 'customName',
           align: 'center'
         },
         {
@@ -229,27 +279,26 @@ export default class ChannelOrder extends Vue {
       dataSource: [],
       total: 0,
       current: 1,
-      saListlists: [],
       lists: [],
-      costs: '0',
       visible: false,
       recored: null,
       isSelect: false,
-      title: '查看详情'
+      isBtn: false,
+      title: '查看详情',
+      costs: undefined,
+      turnovers: undefined,
+      profits: undefined,
+      finalProfits: undefined,
+      rebates: undefined,
+      outputTaxs: undefined,
+      profitPoints: undefined
     }
   }
 
   private mounted() {
     // 获取渠道 / 销售
-    adminFinList({ duty: 2 }).then((res: any) => {
+    adminFinList({ duty: 1 }).then((res: any) => {
       if (res.code === 200) {
-        this.saListlists = res.saListlists.map((item: any) => {
-          return {
-            label: item.realName,
-            value: item.id
-          }
-        })
-
         if (res.lists) {
           this.lists = res.lists.map((item: any) => {
             return {
@@ -266,22 +315,25 @@ export default class ChannelOrder extends Vue {
     // 超级管理员
     if (USER_INFO.isManager === 1) {
       this.getChannelOrder(form)
-      this.isSelect = true
+      this.isSelect = false
+      this.isBtn = true
+      return
     }
     // 主管
     if (USER_INFO.isManager === 2) {
-      form.finId = USER_INFO.id
-      this.getChannelOrder(form)
-      this.isSelect = true
-      this.form = form
-    }
-    if (USER_INFO.isManager === 0) {
-      // 普通
-      form.finId = USER_INFO.id
+      form.saleId = USER_INFO.id
       this.getChannelOrder(form)
       this.isSelect = false
+      this.isBtn = true
       this.form = form
+      return
     }
+    // 普通
+    form.saleId = USER_INFO.id
+    this.getChannelOrder(form)
+    this.isSelect = true
+    this.isBtn = false
+    this.form = form
   }
 
   // 订单日期
@@ -319,7 +371,7 @@ export default class ChannelOrder extends Vue {
 
       form.scheduleStartTime = undefined
       form.scheduleEndTime = undefined
-      form.finId = undefined
+      form.saleId = undefined
 
       form.pageNo = 0
       this.getChannelOrder(form)
@@ -340,7 +392,7 @@ export default class ChannelOrder extends Vue {
 
       form.scheduleStartTime = undefined
       form.scheduleEndTime = undefined
-      form.finId = undefined
+      form.saleId = undefined
 
       form.pageNo = 0
       this.getChannelOrder(form)
@@ -361,7 +413,7 @@ export default class ChannelOrder extends Vue {
 
       form.orderStartTime = undefined
       form.orderEndTime = undefined
-      form.finId = undefined
+      form.saleId = undefined
 
       form.pageNo = 0
       this.getChannelOrder(form)
@@ -415,6 +467,12 @@ export default class ChannelOrder extends Vue {
         if (res.code === 200) {
           this.spinning = false
           this.costs = res.costs
+          this.turnovers = res.turnovers
+          this.profits = res.profits
+          this.finalProfits = res.finalProfits
+          this.rebates = res.rebates
+          this.outputTaxs = res.outputTaxs
+          this.profitPoints = res.profitPoints
           this.dataSource = res.page.result.map((item: any) => {
             return {
               ...item,

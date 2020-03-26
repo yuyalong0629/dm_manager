@@ -1,7 +1,7 @@
 /*
  * @Author: yylong
  * @Date: 2020-03-12 10:31:34
- * @LastEditTime: 2020-03-12 15:15:16
+ * @LastEditTime: 2020-03-25 15:55:12
  * @Description: table columns
  */
 const columns = [
@@ -33,6 +33,7 @@ const columns = [
   {
     title: '销售目标',
     dataIndex: 'finalTarget',
+    scopedSlots: { customRender: 'finalTarget' },
     align: 'center'
   },
   {

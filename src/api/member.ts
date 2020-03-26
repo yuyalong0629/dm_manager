@@ -16,7 +16,9 @@ const api: Api = {
   addOrUpdate: '/api/admin/addOrUpdate',
   typeList: '/api/admin/typeList',
   enableAndDisable: '/api/admin/enableAndDisable',
-  rank: '/api/statistics'
+  rank: '/api/statistics',
+  updateFinalTarget: '/api/admin/updateFinalTarget',
+  classAddOrUpdate: '/api/adminType/addOrUpdate'
 }
 
 /**
@@ -113,5 +115,33 @@ export function rank(parameter: Type) {
     method: 'get',
     url: api.rank,
     params: parameter
+  })
+}
+
+/**
+ * @description: 修改销售目标
+ * @param {*}
+ * @return: updateFinalTarget
+ */
+
+export function updateFinalTarget(parameter: any) {
+  return axios({
+    method: 'post',
+    url: api.updateFinalTarget,
+    data: qs.stringify(parameter)
+  })
+}
+
+/**
+ * @description: 员工分类 => 添加分类
+ * @param {*}
+ * @return: classAddOrUpdate
+ */
+
+export function classAddOrUpdate(parameter: any) {
+  return axios({
+    method: 'post',
+    url: api.classAddOrUpdate,
+    data: qs.stringify(parameter)
   })
 }

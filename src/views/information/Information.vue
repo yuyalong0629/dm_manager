@@ -4,6 +4,21 @@
       <a-button type="primary" icon="plus-circle" @click="handleAdd">添加员工</a-button>
       <a-divider />
       <a-table :columns="columns" :dataSource="dataSource" :pagination="false">
+        <div slot="finalTarget" slot-scope="text, record">
+          <a-input
+            v-if="record.editable"
+            style="width: 100px;"
+            :value="text"
+            @change="e => handleChange(e.target.value, record.key)"
+          />
+          <span style="display: inline-block; width: 100px;" v-else>{{text}}</span>
+          <span v-if="record.editable" style="margin: 0 5px;">
+            <a @click="() => save(record.key)">保存</a>
+          </span>
+          <span v-else style="margin: 0 5px; width: 100px;">
+            <a @click="() => edit(record.key)">修改</a>
+          </span>
+        </div>
         <span slot="status" slot-scope="text, record">
           <a-tooltip placement="left" title="编辑">
             <a-tag
@@ -54,7 +69,11 @@
 import { Component, Vue } from 'vue-property-decorator'
 import MemberForm from '@/components/MemberForm/Form'
 import columns from './columns'
-import { tableInfoList, enableAndDisable } from '@/api/member'
+import {
+  tableInfoList,
+  enableAndDisable,
+  updateFinalTarget
+} from '@/api/member'
 
 interface Params {
   pageNo: number
@@ -72,7 +91,7 @@ interface DataSource {
 export default class Information extends Vue {
   private visible!: boolean
   private spinning!: boolean
-  private dataSource!: DataSource
+  private dataSource!: DataSource[]
   private editInfo!: DataSource
   private total!: number
   private current!: number
@@ -93,6 +112,50 @@ export default class Information extends Vue {
   private handleAdd() {
     this.visible = true
     this.editInfo = {}
+  }
+
+  private handleChange(value: any, key: number) {
+    const dataSource = [...this.dataSource]
+    const target = (dataSource as any).filter(
+      (item: any) => key === item.key
+    )[0]
+    if (target) {
+      target.finalTarget = value
+      this.dataSource = dataSource
+    }
+  }
+
+  private save(key: number) {
+    const dataSource = [...this.dataSource]
+    const target = (dataSource as any).filter(
+      (item: any) => key === item.key
+    )[0]
+    if (target) {
+      updateFinalTarget({
+        id: key,
+        finalTarget: target.finalTarget
+      }).then((res: any) => {
+        if (res.code === 200) {
+          this.$message.success(res.message)
+          target.editable = false
+          this.dataSource = dataSource
+        } else {
+          this.$message.error(res.message)
+        }
+      })
+    }
+  }
+
+  private edit(key: number) {
+    const dataSource = [...this.dataSource]
+    const target = (dataSource as any).filter(
+      (item: any) => key === item.key
+    )[0]
+    if (target) {
+      target.editable = true
+      this.dataSource = dataSource
+      console.log(target)
+    }
   }
 
   // 编辑

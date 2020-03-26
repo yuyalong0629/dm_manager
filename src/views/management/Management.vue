@@ -53,33 +53,23 @@
           <label>员工分类名：</label>
         </a-col>
         <a-col span="21">
-          <a-input placeholder="请输入分类名称" />
+          <a-input v-model="adminName" placeholder="请输入分类名称" />
         </a-col>
       </a-row>
 
       <a-row>
-        <a-col span="3">
+        <a-col span="24">
           <label>设置权限：</label>
         </a-col>
 
-        <a-col span="21" :style="{ marginBottom: '48px' }">
-          <MemberSelect :selectList="selectList.managementList" />
-        </a-col>
-
-        <a-col offset="3" span="21" :style="{ marginBottom: '48px' }">
-          <MemberSelect :selectList="selectList.channelList" />
-        </a-col>
-
-        <a-col offset="3" span="21" :style="{ marginBottom: '48px' }">
-          <MemberSelect :selectList="selectList.saleList" />
-        </a-col>
-
-        <a-col offset="3" span="21" :style="{ marginBottom: '48px' }">
-          <MemberSelect :selectList="selectList.financialList" />
-        </a-col>
-
-        <a-col offset="3" span="21" :style="{ marginBottom: '48px' }">
-          <MemberSelect :selectList="selectList.personnelList" />
+        <a-col
+          v-for="(item, index) in selectList"
+          :key="index"
+          :span="21"
+          :offset="3"
+          :style="{ marginBottom: '48px' }"
+        >
+          <MemberSelect :selectList="item" @emitSelect="emitSelect" />
         </a-col>
       </a-row>
       <div
@@ -89,13 +79,13 @@
               bottom: 0,
               width: '100%',
               borderTop: '1px solid #e9e9e9',
-              padding: '10px 16px',
+              padding: '10px 14%',
               background: '#fff',
-              textAlign: 'right'
+              textAlign: 'left'
             }"
       >
         <a-button :style="{ marginRight: '24px' }" @click="onClose">取消</a-button>
-        <a-button @click="onClose" type="primary">确定</a-button>
+        <a-button @click="onsubmit" type="primary">确定</a-button>
       </div>
     </a-drawer>
   </div>
@@ -106,7 +96,11 @@ import { Component, Vue } from 'vue-property-decorator'
 import MemberSelect from '@/components/MemberSelect/Select'
 import selectList from './select'
 import columns from './columns'
-import { tableClassList, tableClassDelete } from '@/api/member'
+import {
+  tableClassList,
+  tableClassDelete,
+  classAddOrUpdate
+} from '@/api/member'
 
 interface Params {
   pageNo: number
@@ -127,6 +121,8 @@ export default class Management extends Vue {
   private dataSource!: DataSource
   private total!: number
   private current!: number
+  private selectAllList!: any[]
+  private adminName!: string
 
   private data() {
     return {
@@ -136,7 +132,9 @@ export default class Management extends Vue {
       selectList,
       dataSource: [],
       total: 100,
-      current: 1
+      current: 1,
+      selectAllList: [],
+      adminName: ''
     }
   }
 
@@ -174,6 +172,28 @@ export default class Management extends Vue {
       })
   }
 
+  // select
+  private emitSelect(selectList: any) {
+    const { selectAllList } = this
+
+    if (!selectAllList.length) {
+      selectAllList.push(selectList)
+    } else {
+      const findIndex = selectAllList.findIndex(
+        (item: any) => selectList.parentList.title === item.parentList.title
+      )
+      if (findIndex === -1) {
+        selectAllList.push(selectList)
+      } else if (findIndex !== -1 && !selectList.childList.length) {
+        selectAllList.splice(findIndex, 1)
+      } else {
+        selectAllList.splice(findIndex, 1, selectList)
+      }
+    }
+
+    this.selectAllList = selectAllList
+  }
+
   // Table list function
   private getTableClassList(params: Params) {
     this.spinning = true
@@ -209,6 +229,18 @@ export default class Management extends Vue {
     this.visible = false
   }
 
+  // 提交
+  private onsubmit() {
+    const params = {
+      adminName: this.adminName,
+      roleList: JSON.stringify(this.selectAllList)
+    }
+    console.log(params)
+    classAddOrUpdate(params).then((res: any) => {
+      console.log(res)
+    })
+  }
+
   // 分页
   private onChangePage(pageNumber: number) {
     this.getTableClassList({ pageNo: +pageNumber - 1 })
@@ -221,3 +253,6 @@ export default class Management extends Vue {
   }
 }
 </script>
+
+<style lang="less" scoped>
+</style>
