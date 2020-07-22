@@ -122,6 +122,7 @@
       <a-pagination
         showQuickJumper
         :total="total"
+        :defaultPageSize="20"
         :current="current"
         hideOnSinglePage
         @change="onChangePage"

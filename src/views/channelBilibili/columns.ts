@@ -27,24 +27,24 @@ const columns = [
     dataIndex: 'fans',
     align: 'center'
   },
+  // {
+  //   title: '专题刊例',
+  //   dataIndex: 'firstPrice',
+  //   align: 'center'
+  // },
   {
-    title: '专题刊例',
-    dataIndex: 'firstPrice',
+    title: '植入成本',
+    dataIndex: 'secondCost',
+    align: 'center'
+  },
+  {
+    title: '动态成本',
+    dataIndex: 'secondPrice',
     align: 'center'
   },
   {
     title: '专题成本',
     dataIndex: 'firstCost',
-    align: 'center'
-  },
-  {
-    title: '植入刊例',
-    dataIndex: 'secondPrice',
-    align: 'center'
-  },
-  {
-    title: '植入成本',
-    dataIndex: 'secondCost',
     align: 'center'
   },
   {

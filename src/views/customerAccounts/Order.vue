@@ -23,6 +23,7 @@
           showQuickJumper
           :total="total"
           :current="current"
+          :defaultPageSize="20"
           hideOnSinglePage
           @change="onChangePage"
         />
@@ -153,6 +154,7 @@
                 v-model="order.taxType"
                 style="width: 220px;"
               >
+                <a-select-option value="6">专一</a-select-option>
                 <a-select-option value="1">专三</a-select-option>
                 <a-select-option value="2">专六</a-select-option>
                 <a-select-option value="3">普票</a-select-option>
@@ -178,7 +180,7 @@
           <a-col :span="20" :offset="4" style="margin-top: 12px;">
             <a-form-model-item>
               <a-button style="margin-right: 24px;" @click="handleCancel">取消</a-button>
-              <a-button type="primary" @click="handleSubmit">确定</a-button>
+              <a-button type="primary" :loading="loading" @click="handleSubmit">确定</a-button>
             </a-form-model-item>
           </a-col>
         </a-row>
@@ -215,9 +217,11 @@ export default class Order extends Vue {
   private total!: number
   private current!: number
   private spinning!: boolean
+  private loading!: boolean
 
   private data() {
     return {
+      loading: false,
       accountInfo: [],
       orderData: [],
       orderDataFin: [],
@@ -408,6 +412,10 @@ export default class Order extends Vue {
       order.taxation = (+order.cost * 0.06).toFixed(2)
     }
 
+    if (order.taxType === '6') {
+      order.taxation = (+order.cost * 0.01).toFixed(2)
+    }
+
     // 计算净利润
     order.finalProfit = (
       +order.profit -
@@ -489,6 +497,10 @@ export default class Order extends Vue {
       order.taxation = ((+order.cost || 0) * 0.06).toFixed(2)
     }
 
+    if (value === '6') {
+      order.taxation = ((+order.cost || 0) * 0.01).toFixed(2)
+    }
+
     // 计算净利润
     order.finalProfit = (
       +order.profit -
@@ -522,6 +534,7 @@ export default class Order extends Vue {
     order.isIssue = order.isIssueZ ? 1 : 0
     order.customId = order.customIdZ ? order.customIdZ.key : ''
 
+    this.loading = true
     addOrderUpdate(this.order).then((res: any) => {
       if (res.code === 200) {
         this.$message.success(res.message)
@@ -530,6 +543,8 @@ export default class Order extends Vue {
         this.$message.error(res.message)
         this.onClose(true)
       }
+    }).finally(() => {
+      this.loading = false
     })
 
     this.order = order

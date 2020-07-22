@@ -16,7 +16,7 @@ export default class UserLayout extends Vue {
                 <img src={logo} class="title" alt="logo" />
               </a>
             </div>
-            <div class="desc">春有百花秋有月,  夏有凉风冬有雪</div>
+            <div class="desc">天下有大美而不言</div>
           </div>
 
           <router-view />

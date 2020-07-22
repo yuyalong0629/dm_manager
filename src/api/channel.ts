@@ -8,7 +8,39 @@ const api: Api = {
   channelOrder: '/api/order/index',
   adminFinList: '/api/order/adminFinList',
   orderDetail: '/api/order/detail',
-  confirmOrder: '/api/order/confirmOrder'
+  confirmOrder: '/api/order/confirmOrder',
+  orderExcel: '/api/order/orderExcel',
+  orderExport: '/api/order/orderExport'
+}
+
+/**
+ * @description: 销售部门 => 导出
+ * @param {*}
+ * @return: orderExcel
+ */
+
+export function orderExcel(parameter: any) {
+  return axios({
+    method: 'get',
+    url: api.orderExcel,
+    responseType: 'blob',
+    params: parameter
+  })
+}
+
+/**
+ * @description: 财务 => 导出
+ * @param {*}
+ * @return: orderExport
+ */
+
+export function orderExport(parameter: any) {
+  return axios({
+    method: 'get',
+    url: api.orderExport,
+    responseType: 'blob',
+    params: parameter
+  })
 }
 
 /**

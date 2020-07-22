@@ -37,7 +37,7 @@ export const asyncRouterMap = [
       {
         path: '/index/rank',
         name: 'rank',
-        meta: { title: ['销售部门', '销售龙虎榜'], hidden: false },
+        meta: { title: [], hidden: false },
         component: () => import('@/views/rank/Rank')
       },
       {
@@ -199,8 +199,20 @@ export const asyncRouterMap = [
       {
         path: '/index/channelRank',
         name: 'channelRank',
-        meta: { title: ['渠道部门', '渠道龙虎榜'], hidden: false },
+        meta: { title: [], hidden: false },
         component: () => import('@/views/channelRank/Rank')
+      },
+      {
+        path: '/index/financeTable',
+        name: 'financeTable',
+        meta: { title: ['财务部门', '订单报表'], hidden: false },
+        component: () => import('@/views/financeTable/FinanceTable.vue')
+      },
+      {
+        path: '/index/financeEdit',
+        name: 'financeEdit',
+        meta: { title: ['财务部门', '订单修改'], hidden: false },
+        component: () => import('@/views/financeEdit/FinanceTable.vue')
       }
     ]
   }

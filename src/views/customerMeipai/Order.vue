@@ -21,6 +21,7 @@
         <br />
         <a-pagination
           showQuickJumper
+          :defaultPageSize="20"
           :total="total"
           :current="current"
           hideOnSinglePage
@@ -153,6 +154,7 @@
                 v-model="order.taxType"
                 style="width: 220px;"
               >
+                <a-select-option value="6">专一</a-select-option>
                 <a-select-option value="1">专三</a-select-option>
                 <a-select-option value="2">专六</a-select-option>
                 <a-select-option value="3">普票</a-select-option>
@@ -215,9 +217,11 @@ export default class Order extends Vue {
   private total!: number
   private current!: number
   private spinning!: boolean
+  private loading!: boolean
 
   private data() {
     return {
+      loading: false,
       accountInfo: [],
       orderData: [],
       orderDataFin: [],
@@ -408,6 +412,10 @@ export default class Order extends Vue {
       order.taxation = (+order.cost * 0.06).toFixed(2)
     }
 
+    if (order.taxType === '6') {
+      order.taxation = (+order.cost * 0.01).toFixed(2)
+    }
+
     // 计算净利润
     order.finalProfit = (
       +order.profit -
@@ -489,6 +497,10 @@ export default class Order extends Vue {
       order.taxation = ((+order.cost || 0) * 0.06).toFixed(2)
     }
 
+    if (value === '6') {
+      order.taxation = ((+order.cost || 0) * 0.01).toFixed(2)
+    }
+
     // 计算净利润
     order.finalProfit = (
       +order.profit -
@@ -522,15 +534,20 @@ export default class Order extends Vue {
     order.isIssue = order.isIssueZ ? 1 : 0
     order.customId = order.customIdZ ? order.customIdZ.key : ''
 
-    addOrderUpdate(this.order).then((res: any) => {
-      if (res.code === 200) {
-        this.$message.success(res.message)
-        this.onClose(false)
-      } else {
-        this.$message.error(res.message)
-        this.onClose(true)
-      }
-    })
+    this.loading = true
+    addOrderUpdate(this.order)
+      .then((res: any) => {
+        if (res.code === 200) {
+          this.$message.success(res.message)
+          this.onClose(false)
+        } else {
+          this.$message.error(res.message)
+          this.onClose(true)
+        }
+      })
+      .finally(() => {
+        this.loading = false
+      })
 
     this.order = order
   }

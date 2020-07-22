@@ -26,11 +26,11 @@
           </a-form-model-item>
         </a-col>
 
-        <a-col :span="12">
+        <!-- <a-col :span="12">
           <a-form-model-item label="专题刊例" prop="firstPrice">
             <a-input style="width: 240px;" v-model="form.firstPrice" placeholder="请输入专题刊例" />
           </a-form-model-item>
-        </a-col>
+        </a-col> -->
 
         <a-col :span="12">
           <a-form-model-item label="专题成本" prop="firstCost">
@@ -39,8 +39,8 @@
         </a-col>
 
         <a-col :span="12">
-          <a-form-model-item label="植入刊例" prop="secondPrice">
-            <a-input style="width: 240px;" v-model="form.secondPrice" placeholder="请输入植入刊例" />
+          <a-form-model-item label="动态成本" prop="secondPrice">
+            <a-input style="width: 240px;" v-model="form.secondPrice" placeholder="请输入动态成本" />
           </a-form-model-item>
         </a-col>
 
@@ -145,7 +145,7 @@
         <a-col :span="20" :offset="3">
           <a-form-model-item>
             <a-button style="margin-right: 12px;" @click="handleCancel">取消</a-button>
-            <a-button type="primary" @click="handleSubmit">确定</a-button>
+            <a-button type="primary" @click="handleSubmit" :loading="loading">确定</a-button>
           </a-form-model-item>
         </a-col>
       </a-row>
@@ -170,12 +170,14 @@ export default class Order extends Vue {
 
   private form!: any
   private rules!: any
+  private loading!: boolean
 
   private data() {
     return {
+      loading: false,
       accountTypeList: [
-        { label: '自媒体', value: 1 },
-        { label: '营销号', value: 2 }
+        { label: '自媒体', value: 2 },
+        { label: '营销号', value: 1 }
       ],
       accountStateList: [
         { label: '订阅号', value: 1 },
@@ -345,6 +347,7 @@ export default class Order extends Vue {
     ;(this.$refs.ruleForm as any).validate((valid: any) => {
       if (valid) {
         const { form } = this
+        this.loading = true
         addOrUpdate(form)
           .then((res: any) => {
             if (res.code === 200) {
@@ -357,6 +360,7 @@ export default class Order extends Vue {
           })
           .finally(() => {
             this.form = form
+            this.loading = false
           })
       } else {
         console.log('error submit!!')

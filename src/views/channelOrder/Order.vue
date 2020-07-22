@@ -40,7 +40,7 @@
 
       <a-form-model-item label>
         <a-button @click="onCancel">取消</a-button>
-        <a-button type="primary" style="margin-left: 10px;" @click="onSubmit">确定</a-button>
+        <a-button type="primary" :loading="loading" style="margin-left: 10px;" @click="onSubmit">确定</a-button>
       </a-form-model-item>
     </a-form-model>
   </div>
@@ -57,9 +57,11 @@ export default class Order extends Vue {
 
   private accountList!: any
   private form!: any
+  private loading!: boolean
 
   private data() {
     return {
+      loading: false,
       accountList: [],
       form: {
         cost: undefined,
@@ -116,6 +118,7 @@ export default class Order extends Vue {
           ? 3
           : 5
 
+      this.loading = true
       addOrderUpdate(form)
         .then((res: any) => {
           if (res.code === 200) {
@@ -128,6 +131,9 @@ export default class Order extends Vue {
         })
         .catch(() => {
           this.onClose(true)
+        })
+        .finally(() => {
+          this.loading = false
         })
 
       this.form = form

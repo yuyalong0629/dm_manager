@@ -40,7 +40,7 @@
     </a-spin>
 
     <a-drawer
-      title="添加员工分类"
+      :title="title"
       placement="right"
       :maskClosable="false"
       width="60%"
@@ -63,7 +63,7 @@
         </a-col>
 
         <a-col
-          v-for="(item, index) in selectList"
+          v-for="(item, index) in selectListData"
           :key="index"
           :span="21"
           :offset="3"
@@ -94,12 +94,13 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
 import MemberSelect from '@/components/MemberSelect/Select'
-import selectList from './select'
+import selectListData from './select'
 import columns from './columns'
 import {
   tableClassList,
   tableClassDelete,
-  classAddOrUpdate
+  classAddOrUpdate,
+  classAdddetail
 } from '@/api/member'
 
 interface Params {
@@ -123,18 +124,22 @@ export default class Management extends Vue {
   private current!: number
   private selectAllList!: any[]
   private adminName!: string
+  private title!: string
+  private recordId?: number | string
 
   private data() {
     return {
       visible: false,
       spinning: false,
       columns,
-      selectList,
+      selectListData,
       dataSource: [],
       total: 100,
       current: 1,
       selectAllList: [],
-      adminName: ''
+      adminName: '',
+      title: '添加员工分类',
+      recordId: undefined
     }
   }
 
@@ -150,6 +155,26 @@ export default class Management extends Vue {
   // 编辑
   private handleEdit(record: DataSource) {
     this.visible = true
+    this.recordId = record.key
+    this.title = '编辑员工分类'
+    classAdddetail({ adminTypeId: record.key }).then((res: any) => {
+      if (res.code === 200) {
+        this.adminName = res.adminType.adminName || ''
+
+        const target = selectListData.map((item: any) => {
+          const list = res.typeRoleMapList.map((d: any) => {
+            if (item.parentList.roleName === d.parentList.roleName) {
+              return d.childList.map((i: any) => i.roleName)
+            }
+          })
+          return {
+            ...item,
+            checkedList: list.flat().filter((n: any) => n !== undefined)
+          }
+        })
+        ;(this as any).selectListData = target
+      }
+    })
   }
 
   // 删除
@@ -180,7 +205,8 @@ export default class Management extends Vue {
       selectAllList.push(selectList)
     } else {
       const findIndex = selectAllList.findIndex(
-        (item: any) => selectList.parentList.title === item.parentList.title
+        (item: any) =>
+          selectList.parentList.roleName === item.parentList.roleName
       )
       if (findIndex === -1) {
         selectAllList.push(selectList)
@@ -222,23 +248,50 @@ export default class Management extends Vue {
   // 添加分类 抽屉
   private handleAdd() {
     this.visible = true
+    this.recordId = undefined
+    this.title = '添加员工分类'
   }
 
   // 关闭抽屉
   private onClose() {
-    this.visible = false
+    new Promise((resolve, reject) => {
+      this.visible = false
+      resolve()
+    }).then(() => {
+      const pageNo = this.$route.query.pageNo
+      if (pageNo) {
+        this.getTableClassList({ pageNo: +pageNo - 1 })
+      } else {
+        this.getTableClassList({ pageNo: 0 })
+      }
+    })
   }
 
   // 提交
   private onsubmit() {
     const params = {
       adminName: this.adminName,
-      roleList: JSON.stringify(this.selectAllList)
+      id: this.recordId,
+      roleList: JSON.stringify(this.selectAllList.filter(item => item.childList.length))
     }
-    console.log(params)
-    classAddOrUpdate(params).then((res: any) => {
-      console.log(res)
-    })
+    classAddOrUpdate(params)
+      .then((res: any) => {
+        if (res.code === 200) {
+          this.visible = false
+          this.$message.success(res.message)
+        } else {
+          this.visible = false
+          this.$message.error(res.message)
+        }
+      })
+      .finally(() => {
+        const pageNo = this.$route.query.pageNo
+        if (pageNo) {
+          this.getTableClassList({ pageNo: +pageNo - 1 })
+        } else {
+          this.getTableClassList({ pageNo: 0 })
+        }
+      })
   }
 
   // 分页

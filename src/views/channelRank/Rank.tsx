@@ -25,7 +25,6 @@ export default class Rank extends Vue {
   private spinning!: boolean
   private timePercent?: string
   private firstSales?: string
-  private twoSales?: string
 
   private data() {
     return {
@@ -34,8 +33,7 @@ export default class Rank extends Vue {
       normalList: [],
       timePercent: undefined,
       spinning: false,
-      firstSales: false,
-      twoSales: false
+      firstSales: false
     }
   }
 
@@ -45,20 +43,15 @@ export default class Rank extends Vue {
     rank({ type: 2 }).then((res: any) => {
       if (res.code === 200) {
         this.timePercent = res.timePercent
-        this.firstSales = res.firstSales
-        this.twoSales = res.twoSales
+        this.firstSales = res.firstchannel
 
         this.dutyList = res.adminList.filter((item: DutyListType) => item.isManager === 2)
-
         const imgList = [require('@/assets/image/one.png'), require('@/assets/image/two.png'), require('@/assets/image/three.png')]
-        this.adminList = res.adminList.filter((item: DutyListType) => item.isManager === 0).slice(0, 3).map((item: any, i: number) => {
-          return {
-            ...item, img: imgList[i]
-          }
+        const normalList = res.adminList.filter((item: any) => item.isManager === 0)
+        this.adminList = normalList.slice(0, 3).map((item: any, index: number) => {
+          return { ...item, img: imgList[index] }
         })
-        this.normalList = res.adminList.slice(4)
-
-        console.log(this.normalList)
+        this.normalList = normalList.slice(3)
       }
     }).finally(() => {
       this.spinning = false
@@ -129,12 +122,8 @@ export default class Rank extends Vue {
           <p>{this.timePercent}</p>
         </div>
         <div class="rank-left">
-          <label>战狼队总业绩</label>
+          <label>渠道总业绩</label>
           <p>{this.firstSales}</p>
-        </div>
-        <div class="rank-right">
-          <label>巅峰队总业绩</label>
-          <p>{this.twoSales}</p>
         </div>
       </div >
     )

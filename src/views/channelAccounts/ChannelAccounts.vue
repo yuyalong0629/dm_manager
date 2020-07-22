@@ -100,19 +100,6 @@
               <a-icon type="edit" />
             </a-tag>
           </a-tooltip>
-          <!-- <a-tooltip placement="right" title="删除">
-            <a-tag
-              color="#DA5054"
-              @click="handleOrder(recored, edit = '3')"
-              :style="{
-                    'font-size': '16px',
-                    'margin-right': '8px',
-                    cursor: 'pointer'
-                  }"
-            >
-              <a-icon type="delete" />
-            </a-tag>
-          </a-tooltip>-->
         </span>
         <span slot="accountType" slot-scope="text">{{ text === 1 ? '营销号' : '自媒体' }}</span>
         <span slot="accountState" slot-scope="text">{{ text === 1 ? '订阅号' : '服务号' }}</span>
@@ -122,6 +109,7 @@
         showQuickJumper
         :total="total"
         :current="current"
+        :defaultPageSize="20"
         hideOnSinglePage
         @change="onChangePage"
       />

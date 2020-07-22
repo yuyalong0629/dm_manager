@@ -1,4 +1,4 @@
-import { Component, Vue, Prop, Emit } from 'vue-property-decorator'
+import { Component, Vue, Prop, Emit, Watch } from 'vue-property-decorator'
 import './index.less'
 
 @Component
@@ -51,13 +51,28 @@ export default class Select extends Vue {
     })
     selectList.childList = target
 
-    // console.log(selectList)
     this.emitSelect(selectList)
   }
 
   @Emit('emitSelect')
   private emitSelect(selectList: any) {
     return selectList
+  }
+
+  @Watch('selectList', { immediate: true, deep: true })
+  private watchSelectList(value: any) {
+    this.indeterminate = !!value.checkedList.length && (value.checkedList.length < this.selectList.childList.length)
+    this.checkAll = value.checkedList.length === this.selectList.childList.length
+
+    const selectList = { ...this.selectList } // 浅拷贝
+
+    const target = value.checkedList.map((item: any) => {
+      return selectList.childList.filter((d: any) => item === d.value)[0]
+    })
+    selectList.childList = target
+
+    this.checkedList = value.checkedList
+    this.emitSelect(selectList)
   }
 
   public render() {
@@ -69,7 +84,7 @@ export default class Select extends Vue {
             on-change={this.onCheckAllChange}
             checked={this.checkAll}
           >
-            <span style={{ 'font-weight': '600', color: '#DA5054' }}>{this.selectList.parentList.title}</span>
+            <span style={{ 'font-weight': '600', color: '#DA5054' }}>{this.selectList.parentList.roleName}</span>
           </a-checkbox>
         </div>
         <br />

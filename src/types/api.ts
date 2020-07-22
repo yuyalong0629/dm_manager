@@ -1,7 +1,7 @@
 /*
  * @Author: yylong
  * @Date: 2020-03-09 16:09:38
- * @LastEditTime: 2020-03-18 19:19:28
+ * @LastEditTime: 2020-05-19 17:10:41
  * @Description: 用户 API 接口类型定义
  */
 
@@ -49,6 +49,8 @@ export interface CustomInfoTabType {
   pageNo: number
   saleId?: number | string
   customName: string
+  createTimeStart?: string
+  createTimeEnd?: string
 }
 
 // 销售部门 => 客户信息 添加

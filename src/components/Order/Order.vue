@@ -23,6 +23,7 @@
           showQuickJumper
           :total="total"
           :current="current"
+          :defaultPageSize="10"
           hideOnSinglePage
           @change="onChangePage"
         />
@@ -153,6 +154,7 @@
                 v-model="order.taxType"
                 style="width: 220px;"
               >
+                <a-select-option value="6">专一</a-select-option>
                 <a-select-option value="1">专三</a-select-option>
                 <a-select-option value="2">专六</a-select-option>
                 <a-select-option value="3">普票</a-select-option>
@@ -408,6 +410,10 @@ export default class Order extends Vue {
       order.taxation = (+order.cost * 0.06).toFixed(2)
     }
 
+    if (order.taxType === '6') {
+      order.taxation = (+order.cost * 0.01).toFixed(2)
+    }
+
     // 计算净利润
     order.finalProfit = (
       +order.profit -
@@ -487,6 +493,10 @@ export default class Order extends Vue {
 
     if (value === '2') {
       order.taxation = ((+order.cost || 0) * 0.06).toFixed(2)
+    }
+
+    if (value === '6') {
+      order.taxation = ((+order.cost || 0) * 0.01).toFixed(2)
     }
 
     // 计算净利润

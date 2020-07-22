@@ -13,6 +13,16 @@ export default class App extends Vue {
     }
   }
 
+  private mounted() {
+    const USER_INFO = JSON.parse(this.$ls.get('USER_INFO'))
+
+    if (USER_INFO && USER_INFO.duty === 2) {
+      this.$router.replace({ path: '/index/channelRank' })
+    } else {
+      this.$router.replace({ path: '/index/rank' })
+    }
+  }
+
   render() {
     return (
       <a-config-provider locale={this.locale}>

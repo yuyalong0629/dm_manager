@@ -1,40 +1,8 @@
 <template>
   <div class="order">
     <a-spin :spinning="spinning">
-      <a-divider orientation="left" v-if="recored.edit === '1' || recored.edit === '2'">快手号信息</a-divider>
-      <a-form-model layout="inline" v-if="recored.edit === '1' || recored.edit === '2'">
-        <a-row>
-          <a-col :span="12" v-for="(accountInfo, index) of accountInfo" :key="index">
-            <a-form-model-item :label="`${accountInfo.label}：`">
-              <span :style="{ color: accountInfo.color || '#999'  }">{{ accountInfo.value }}</span>
-            </a-form-model-item>
-          </a-col>
-        </a-row>
-      </a-form-model>
-      <a-col :span="23" :offset="1" v-if="recored.edit === '1'" style="margin-top: 24px;">
-        <a-button style="margin-right: 24px;" type="primary" @click="handleCancel">返回</a-button>
-      </a-col>
-
-      <!-- 订单 -->
-      <a-col :span="24" v-if="recored.edit === '3'" style="margin-top: 24px;">
-        <a-table :columns="columns" :dataSource="dataSource" :pagination="false"></a-table>
-        <br />
-        <a-pagination
-          showQuickJumper
-          :defaultPageSize="20"
-          :total="total"
-          :current="current"
-          hideOnSinglePage
-          @change="onChangePage"
-        />
-      </a-col>
-      <a-col :span="24" v-if="recored.edit === '3'" style="margin-top: 24px;">
-        <a-button style="margin-right: 24px;" type="primary" @click="handleCancel">返回</a-button>
-      </a-col>
-
       <!-- 编辑 -->
-      <a-divider orientation="left" v-if="recored.edit === '2'">订单信息</a-divider>
-      <a-form-model layout="inline" v-if="recored.edit === '2'">
+      <a-form-model v-if="!recored.isEdit" layout="inline">
         <a-row>
           <a-col :span="12">
             <a-form-model-item label="回款客户：">
@@ -42,12 +10,13 @@
                 allowClear
                 showSearch
                 labelInValue
+                :disabled="!recored.isEdit"
                 v-model="order.customIdZ"
                 :defaultActiveFirstOption="false"
                 :showArrow="false"
                 :filterOption="false"
                 style="width: 220px;"
-                placeholder="请选择汇款客户"
+                placeholder="请选择回款客户"
                 @search="fetchUser"
                 @change="handleChange"
                 @focus="handleFocus"
@@ -62,6 +31,7 @@
               <a-input-number
                 placeholder="请输入刷号费"
                 v-model="order.brush"
+                :disabled="!recored.isEdit"
                 @change="onChangeBrush"
                 style="width: 220px;"
               />
@@ -71,6 +41,7 @@
             <a-form-model-item label="流水：">
               <a-input-number
                 placeholder="请输入流水"
+                :disabled="!recored.isEdit"
                 @change="onChangeTurnover"
                 v-model="order.turnover"
                 style="width: 220px;"
@@ -92,6 +63,7 @@
             <a-form-model-item label="成本：">
               <a-input-number
                 placeholder="请输入成本"
+                :disabled="!recored.isEdit"
                 @change="onChangeCost"
                 v-model="order.cost"
                 style="width: 220px;"
@@ -116,13 +88,20 @@
           </a-col>
           <a-col :span="12">
             <a-form-model-item label="排期时间：">
-              <a-date-picker @change="onChangeSchedule" style="width: 220px;" />
+              <a-date-picker
+                v-model="order.schedule"
+                :disabled="!recored.isEdit"
+                :format="dateFormat"
+                @change="onChangeSchedule"
+                style="width: 220px;"
+              />
             </a-form-model-item>
           </a-col>
           <a-col :span="12">
             <a-form-model-item label="返点：">
               <a-input-number
                 placeholder="请输入返点"
+                :disabled="!recored.isEdit"
                 @change="onChangeRebate"
                 v-model="order.rebate"
                 style="width: 220px;"
@@ -136,6 +115,7 @@
                 @change="onChangeIsIssue"
                 v-model="order.isIssueZ"
                 checkedChildren="是"
+                :disabled="!recored.isEdit"
                 unCheckedChildren="否"
                 defaultChecked
               />
@@ -152,6 +132,7 @@
                 placeholder="是否含税"
                 @change="onChangeTaxType"
                 v-model="order.taxType"
+                :disabled="!recored.isEdit"
                 style="width: 220px;"
               >
                 <a-select-option value="6">专一</a-select-option>
@@ -171,6 +152,7 @@
             <a-form-model-item label="备注：">
               <a-textarea
                 v-model="order.saleRemark"
+                :disabled="!recored.isEdit"
                 style="width: 220px;"
                 placeholder="备注..."
                 :autoSize="{  minRows: 3, maxRows: 6 }"
@@ -180,11 +162,29 @@
           <a-col :span="20" :offset="4" style="margin-top: 12px;">
             <a-form-model-item>
               <a-button style="margin-right: 24px;" @click="handleCancel">取消</a-button>
-              <a-button type="primary" :loading="loading" @click="handleSubmit">确定</a-button>
+              <a-button type="primary" @click="handleSubmit">确定</a-button>
             </a-form-model-item>
           </a-col>
         </a-row>
       </a-form-model>
+      <a-table
+        v-if="recored.isEdit"
+        :columns="columns"
+        :dataSource="dataSource"
+        :pagination="false"
+        :scroll="{ x: 3000, y: 500 }"
+      ></a-table>
+      <br />
+      <a-pagination
+        showQuickJumper
+        :total="total"
+        :current="current"
+        hideOnSinglePage
+        @change="onChangePage"
+      />
+      <a-col v-if="recored.isEdit" :span="20" :offset="0" style="margin-top: 24px;">
+        <a-button style="margin-right: 24px;" type="primary" @click="handleCancel">返回</a-button>
+      </a-col>
     </a-spin>
   </div>
 </template>
@@ -197,6 +197,9 @@ import {
   addOrderUpdate,
   orderByAccountList
 } from '@/api/market'
+import { orderDetail } from '@/api/channel'
+import { updateOrderIndex } from '@/api/member'
+import moment from 'moment'
 
 interface ValueType {
   [key: string]: string | number
@@ -212,20 +215,120 @@ export default class Order extends Vue {
   private orderDataFin!: any[]
   private value?: ValueType
   private order!: any
-  private columns!: any[]
-  private dataSource!: any[]
+  private columns!: any
+  private dataSource!: any
   private total!: number
   private current!: number
   private spinning!: boolean
-  private loading!: boolean
 
   private data() {
     return {
-      loading: false,
       accountInfo: [],
       orderData: [],
+      columns: [
+        {
+          title: '序号',
+          dataIndex: 'key',
+          align: 'center',
+          width: 80,
+          fixed: 'left'
+        },
+        {
+          title: '订单号',
+          dataIndex: 'orderNum',
+          width: 200,
+          align: 'center'
+        },
+        {
+          title: '公众号',
+          dataIndex: 'accountName',
+          width: 160,
+          align: 'center'
+        },
+        {
+          title: '回款客户',
+          dataIndex: 'customName',
+          width: 240,
+          align: 'center'
+        },
+        {
+          title: '修改时间',
+          dataIndex: 'createTime',
+          width: 200,
+          align: 'center'
+        },
+        {
+          title: '排期时间',
+          dataIndex: 'schedule',
+          width: 180,
+          align: 'center'
+        },
+        {
+          title: '流水',
+          dataIndex: 'turnover',
+          width: 120,
+          align: 'center'
+        },
+        {
+          title: '成本',
+          dataIndex: 'cost',
+          align: 'center'
+        },
+        {
+          title: '毛利润',
+          dataIndex: 'profit',
+          align: 'center'
+        },
+        {
+          title: '利润点',
+          dataIndex: 'profitPoint',
+          align: 'center'
+        },
+        {
+          title: '销项税',
+          dataIndex: 'outputTax',
+          align: 'center'
+        },
+        {
+          title: '进项税',
+          dataIndex: 'taxation',
+          align: 'center'
+        },
+        {
+          title: '返点',
+          dataIndex: 'rebate',
+          align: 'center'
+        },
+        {
+          title: '净利润',
+          dataIndex: 'finalProfit',
+          align: 'center'
+        },
+        {
+          title: '所属渠道',
+          dataIndex: 'channelName',
+          align: 'center'
+        },
+        {
+          title: '所属销售',
+          dataIndex: 'saleName',
+          align: 'center'
+        },
+        {
+          title: '修改人员',
+          dataIndex: 'operateName',
+          width: 100,
+          align: 'center',
+          fixed: 'right'
+        }
+      ],
       orderDataFin: [],
+      dataSource: [],
       value: undefined,
+      dateFormat: 'YYYY-MM-DD',
+      total: 0,
+      current: 1,
+      spinning: false,
       order: {
         accountName: '', // 公众号名字
         accountId: undefined, // 公众号ID
@@ -244,69 +347,87 @@ export default class Order extends Vue {
         taxType: undefined, // 税款类型 1 专三  2 专六  3 普三 4 普六 5 不含税
         taxation: 0, // 进项税
         saleRemark: undefined // 备注
-      },
-      columns: [
-        {
-          title: '订单号',
-          dataIndex: 'orderNum',
-          align: 'center'
-        },
-        {
-          title: '销售',
-          dataIndex: 'saleName',
-          align: 'center'
-        },
-        {
-          title: '排期时间',
-          dataIndex: 'schedule',
-          align: 'center'
-        }
-      ],
-      dataSource: [],
-      total: 0,
-      current: 1,
-      spinning: false
+      }
     }
   }
 
-  private mounted() {
-    const params = {
-      pageNo: 0,
-      accountId: this.recored.id
+  @Watch('recored', { immediate: true, deep: true })
+  private watchForm(value: any) {
+    if (!value.isEdit) {
+      this.$nextTick(() => {
+        orderDetail({ orderId: value.id }).then((res: any) => {
+          if (res.code === 200) {
+            Object.assign(this.order, res.order)
+            console.log(this.order)
+            const { order } = this
+            if (order) {
+              order.taxType =
+                order.taxType === 1
+                  ? '专三'
+                  : order.taxType === 2
+                  ? '专六'
+                  : order.taxType === 3
+                  ? '普票'
+                  : order.taxType === 6
+                  ? '专一'
+                  : '无'
+              order.customIdZ = {
+                label: order.customName,
+                value: order.customId
+              }
+              order.schedule = moment(order.schedule)
+              this.order = order
+            }
+          }
+        })
+      })
+    } else {
+      const params = {
+        pageNo: 0,
+        orderId: value.id
+      }
+      this.getUpdateOrderIndex(params)
     }
-    this.getOrderByAccountList(params)
+  }
+
+  private getUpdateOrderIndex(params: any) {
+    this.spinning = true
+    return updateOrderIndex(params)
+      .then((res: any) => {
+        if (res.code === 200) {
+          const dataSource = res.page.result.map((item: any) => {
+            return {
+              ...item,
+              key: item.id
+            }
+          })
+          this.dataSource = [{ ...res.order, key: res.order.id }, ...dataSource]
+        }
+      })
+      .finally(() => {
+        this.spinning = false
+      })
   }
 
   // 分页
   private onChangePage(pageNumber: number) {
     const params = {
       pageNo: +pageNumber - 1,
-      accountId: this.recored.id
+      orderId: this.recored.id
     }
-    this.getOrderByAccountList(params)
+    this.getUpdateOrderIndex(params)
   }
 
-  private getOrderByAccountList(params: any) {
-    this.spinning = true
-    return orderByAccountList(params)
-      .then((res: any) => {
-        if (res.code === 200) {
-          this.dataSource = res.page.result.map((item: any) => {
-            return {
-              key: item.id,
-              orderNum: item.orderNum,
-              saleName: item.saleName,
-              schedule: item.schedule
-            }
-          })
-
-          this.total = res.page.count
-          this.current = res.page.index + 1
-        }
-      })
-      .finally(() => {
-        this.spinning = false
-      })
+  private mounted() {
+    customList({ customName: '' }).then((res: any) => {
+      if (res.code === 200) {
+        const data = res.customs.map((item: any) => ({
+          label: item.customName,
+          value: item.id
+        }))
+        this.orderData = data
+      }
+    })
   }
 
   // 搜索
@@ -521,8 +642,9 @@ export default class Order extends Vue {
   // 排期时间
   private onChangeSchedule(date: any, dateString: string) {
     const { order } = this
-    order.schedule = dateString
+    order.schedule = moment(dateString)
     this.order = order
+    console.log(dateString)
   }
 
   // 提交
@@ -532,10 +654,23 @@ export default class Order extends Vue {
     order.accountId = this.recored.id // 公众号ID
     order.finId = this.recored.finId // 渠道ID
     order.isIssue = order.isIssueZ ? 1 : 0
-    order.customId = order.customIdZ ? order.customIdZ.key : ''
+    order.customId = order.customIdZ
+      ? order.customIdZ.key || order.customIdZ.value
+      : ''
+    order.schedule = moment(order.schedule).format('YYYY-MM-DD')
+    order.taxType =
+      order.taxType === '专三'
+        ? 1
+        : order.taxType === '专六'
+        ? 2
+        : order.taxType === '普票'
+        ? 3
+        : order.taxType === '专一'
+        ? 6
+        : 5
+    console.log(order)
 
-    this.loading = true
-    addOrderUpdate(this.order)
+    addOrderUpdate(order)
       .then((res: any) => {
         if (res.code === 200) {
           this.$message.success(res.message)
@@ -546,10 +681,9 @@ export default class Order extends Vue {
         }
       })
       .finally(() => {
-        this.loading = false
+        order.schedule = moment(order.schedule)
+        this.order = order
       })
-
-    this.order = order
   }
 
   private handleCancel() {
@@ -559,35 +693,6 @@ export default class Order extends Vue {
   @Emit('onClose')
   private onClose(isClose: boolean) {
     return isClose
-  }
-
-  @Watch('recored', { immediate: true, deep: true })
-  private watchRecored(value: any) {
-    this.$nextTick(() => {
-      console.log(value)
-      this.accountInfo = [
-        { label: '快手号', value: value.accountName },
-        { label: '快手号ID', value: value.accountId },
-        { label: '所属类别', value: value.accountTypeName },
-        { label: '所属地区', value: value.areaName },
-        { label: '刊例', value: value.firstPrice, color: '#00a0e9' },
-        { label: '成本', value: value.firstCost, color: '#ff0012' },
-        { label: '是否外链', value: value.isLink === 0 ? '否' : '是' },
-        { label: '是否快接单', value: value.isQuickorder === 0 ? '否' : '是' },
-        { label: '保留时长', value: value.retentionTime },
-        {
-          label: '快手号属性',
-          value: value.accountType === 1 ? '营销号' : '自媒体'
-        },
-        { label: '所属运营渠道', value: value.adminName },
-        {
-          label: '快手号分类',
-          value: value.accountState === 7 ? '快手号' : ''
-        },
-        { label: '粉丝数', value: value.fans },
-        { label: '备注', value: value.remark }
-      ]
-    })
   }
 }
 </script>

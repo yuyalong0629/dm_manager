@@ -15,7 +15,11 @@ const api: Api = {
   customList: '/api/order/customList',
   finAdminList: '/api/order/finAdminList',
   addOrderUpdate: '/api/order/addOrUpdate',
-  orderByAccountList: '/api/accout/orderByAccountList'
+  orderByAccountList: '/api/accout/orderByAccountList',
+  accountClick: '/api/account/accountClick',
+  deleteOrder: '/api/order/deleteOrder',
+  customUpdateList: '/api/custom/customUpdateList',
+  customUpdateAdd: '/api/custom/customUpdateAdd'
 }
 
 /**
@@ -198,5 +202,61 @@ export function orderByAccountList(parameter: any) {
     method: 'get',
     url: api.orderByAccountList,
     params: parameter
+  })
+}
+
+/**
+ * @description: *
+ * @param {*}
+ * @return: accountClick
+ */
+
+export function accountClick(parameter: any) {
+  return axios({
+    method: 'get',
+    url: api.accountClick,
+    params: parameter
+  })
+}
+
+/**
+ * @description: 删除
+ * @param {*}
+ * @return: deleteOrder
+ */
+
+export function deleteOrder(parameter: any) {
+  return axios({
+    method: 'get',
+    url: api.deleteOrder,
+    params: parameter
+  })
+}
+
+/**
+ * @description: 客户信息追踪
+ * @param {*}
+ * @return: customUpdateList
+ */
+
+export function customUpdateList(parameter: any) {
+  return axios({
+    method: 'get',
+    url: api.customUpdateList,
+    params: parameter
+  })
+}
+
+/**
+ * @description: 客户信息追踪添加
+ * @param {*}
+ * @return: customUpdateAdd
+ */
+
+export function customUpdateAdd(parameter: any) {
+  return axios({
+    method: 'post',
+    url: api.customUpdateAdd,
+    data: qs.stringify(parameter)
   })
 }

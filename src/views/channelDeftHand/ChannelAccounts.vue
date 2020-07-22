@@ -124,6 +124,7 @@
         showQuickJumper
         :total="total"
         :current="current"
+        :defaultPageSize="20"
         hideOnSinglePage
         @change="onChangePage"
       />

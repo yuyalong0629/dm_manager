@@ -9,6 +9,7 @@
       <br />
       <a-pagination
         showQuickJumper
+        :defaultPageSize="10"
         :total="total"
         :current="current"
         hideOnSinglePage

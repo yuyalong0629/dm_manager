@@ -11,7 +11,9 @@ import { Api, Login } from '../types/api'
 
 const api: Api = {
   login: '/api/login',
-  logout: '/api/logout'
+  logout: '/api/logout',
+  menu: '/api/index',
+  updatePwd: '/api/updatePwd'
 }
 
 /**
@@ -30,6 +32,19 @@ export function Login(parameter: Login) {
 }
 
 /**
+ * @description: 修改密码
+ * @return: updatePwd
+ */
+
+export function updatePwd(parameter: any) {
+  return axios({
+    method: 'post',
+    url: api.updatePwd,
+    data: qs.stringify(parameter)
+  })
+}
+
+/**
  * @description: 退出登录
  * @param {*}
  * @return: Logout
@@ -39,5 +54,18 @@ export function Logout() {
   return axios({
     method: 'get',
     url: api.logout
+  })
+}
+
+/**
+ * @description: 权限菜单
+ * @param {*}
+ * @return: menu
+ */
+
+export function menu() {
+  return axios({
+    method: 'get',
+    url: api.menu
   })
 }

@@ -13,6 +13,13 @@ const columns = [
     fixed: 'left'
   },
   {
+    title: '小红书号',
+    dataIndex: 'accountId',
+    align: 'center',
+    width: '120px',
+    fixed: 'left'
+  },
+  {
     title: '所属类别',
     dataIndex: 'accountTypeName',
     align: 'center'
@@ -28,22 +35,22 @@ const columns = [
     align: 'center'
   },
   {
-    title: '微任务直发刊例',
+    title: '图文直发成本',
     dataIndex: 'firstPrice',
     align: 'center'
   },
   {
-    title: '微任务直发成本',
+    title: '图文原创成本',
     dataIndex: 'firstCost',
     align: 'center'
   },
   {
-    title: '微任务转发刊例',
+    title: '视频原创刊例',
     dataIndex: 'secondPrice',
     align: 'center'
   },
   {
-    title: '微任务转发成本',
+    title: '视频原创成本',
     dataIndex: 'secondCost',
     align: 'center'
   },

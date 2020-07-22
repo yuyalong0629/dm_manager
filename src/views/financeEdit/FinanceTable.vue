@@ -1,123 +1,49 @@
 <template>
   <div class="channel-order">
     <a-spin :spinning="spinning">
-      <a-form-model layout="inline" ref="ruleForm" :model="form" :rules="rules" labelAlign="left">
-        <a-row>
-          <a-col :span="5">
-            <a-form-model-item label="订单号" prop="orderNum">
-              <a-input style="width: 240px" v-model="form.orderNum" placeholder="请输入订单号" />
-            </a-form-model-item>
-          </a-col>
-
-          <a-col :span="7">
-            <a-form-model-item label="订单日期" prop="orderStartTime">
-              <a-range-picker @change="onChangeorderTime" />
-            </a-form-model-item>
-          </a-col>
-
-          <a-col :span="5">
-            <a-form-model-item v-if="isBtn" label="所属销售" prop="saleId">
-              <a-select style="width: 180px" v-model="form.saleId" placeholder="请选择所属销售">
-                <a-select-option v-for="item of lists" :key="item.value">{{ item.label }}</a-select-option>
-              </a-select>
-            </a-form-model-item>
-          </a-col>
-        </a-row>
-
-        <a-row>
-          <a-col :span="5">
-            <a-form-model-item label="公众号" prop="accountName">
-              <a-input style="width: 240px" v-model="form.accountName" placeholder="请输入公众号" />
-            </a-form-model-item>
-          </a-col>
-
-          <a-col :span="7">
-            <a-form-model-item label="排期日期" prop="scheduleStartTime">
-              <a-range-picker @change="onChangeScheduleTime" />
-            </a-form-model-item>
-          </a-col>
-
-          <a-col :span="6">
-            <a-form-model-item label="搜索客户：">
-              <a-select
-                allowClear
-                showSearch
-                labelInValue
-                v-model="form.customId"
-                :defaultActiveFirstOption="false"
-                :showArrow="false"
-                :filterOption="false"
-                style="width: 220px;"
-                placeholder="请选择回款客户"
-                @search="fetchUser"
-                @change="handleChange"
-                @focus="handleFocus"
-                :notFoundContent="null"
-              >
-                <a-select-option v-for="d in orderData" :key="d.value">{{d.label}}</a-select-option>
-              </a-select>
-            </a-form-model-item>
-          </a-col>
-
-          <a-col :span="6">
-            <a-form-model-item label>
-              <a-button
-                :style="{width: '80px', marginRight: '12px'}"
-                @click="onSubmit"
-                type="primary"
-              >查询</a-button>
-            </a-form-model-item>
-          </a-col>
-        </a-row>
-      </a-form-model>
-
-      <a-divider orientation="left">订单信息列表</a-divider>
-      <a-descriptions size="small" :column="10">
-        <a-descriptions-item label="总流水">
-          <a>{{ turnovers }}</a>
-        </a-descriptions-item>
-        <a-descriptions-item label="总成本">
-          <a>{{ costs }}</a>
-        </a-descriptions-item>
-        <a-descriptions-item label="总毛利润">
-          <a>{{ profits }}</a>
-        </a-descriptions-item>
-        <a-descriptions-item label="总销项税">
-          <a>{{ outputTaxs }}</a>
-        </a-descriptions-item>
-        <a-descriptions-item label="总返点">
-          <a>{{ rebates }}</a>
-        </a-descriptions-item>
-        <a-descriptions-item label="总净利润">
-          <a>{{ finalProfits }}</a>
-        </a-descriptions-item>
-        <a-descriptions-item label="总利润点">
-          <a>{{ profitPoints }}</a>
-        </a-descriptions-item>
-      </a-descriptions>
-      <div class="channel-order-date" v-if="isBtn">
-        <a-button type="primary" @click="handleImport">导出</a-button>
-
-        <span>
-          <a-button type="primary" style="margin: 0 12px;" @click="handleNowday">查看今日</a-button>
-          <a-button type="primary" @click="handleYesterday">查看昨日</a-button>
-          <a-button style="margin: 0 12px;" type="primary" @click="handleMonthOrder">当月订单</a-button>
-          <a-button type="primary" @click="handleMonthSchedule">当月排期</a-button>
-        </span>
-      </div>
       <a-table
         :columns="columns"
         :dataSource="dataSource"
         :rowSelection="rowSelection"
         :pagination="false"
-        :scroll="{ x: 2600 }"
+        :scroll="{ x: 3000, y: 500 }"
       >
+        <div slot="orderPayTime" slot-scope="text, record">
+          <a-date-picker
+            v-if="record.editableDate"
+            :value="moment(text)"
+            style="width: 160px;"
+            @change="(date, dateString)=> handleChangeDate(date, dateString, record.key)"
+          />
+          <span style="display: inline-block; width: 100px;" v-else>{{text}}</span>
+          <span v-if="record.editableDate" style="margin: 0 5px;">
+            <a @click="() => saveDate(record)">保存</a>
+          </span>
+          <span v-else style="margin: 0 5px; width: 100px;">
+            <a @click="() => editDate(record)">修改</a>
+          </span>
+        </div>
+        <div slot="returnedMoney" slot-scope="text, record">
+          <a-input-number
+            v-if="record.editable"
+            style="width: 80px;"
+            :value="text"
+            @change="value=> handleChangeReturn(value, record.key)"
+          />
+          <span style="display: inline-block; width: 100px;" v-else>{{text}}</span>
+          <span v-if="record.editable" style="margin: 0 5px;">
+            <a @click="() => saveReturn(record)">保存</a>
+          </span>
+          <span v-else style="margin: 0 5px; width: 100px;">
+            <a @click="() => editReturn(record.key)">修改</a>
+          </span>
+        </div>
         <span
           slot="taxType"
           slot-scope="text"
         >{{ text === 1 ? '专三' : text === 2 ? '专六' : text === 3 ? '普票' : '不含税' }}</span>
         <span slot="edit" slot-scope="text, recored">
-          <!-- <a-tooltip placement="left" title="查看">
+          <a-tooltip placement="left" title="查看">
             <a-tag
               @click="handleOrder(recored, false)"
               color="#00a0e9"
@@ -125,8 +51,8 @@
             >
               <a-icon type="search" />
             </a-tag>
-          </a-tooltip> -->
-          <a-tooltip v-if="isSelect" placement="top" title="编辑">
+          </a-tooltip>
+          <a-tooltip v-if="recored.isUpdate === 1" placement="top" title="查看编辑">
             <a-tag
               color="#87d068"
               @click="handleOrder(recored, true)"
@@ -137,19 +63,6 @@
                   }"
             >
               <a-icon type="edit" />
-            </a-tag>
-          </a-tooltip>
-          <a-tooltip v-if="JSON.parse($ls.get('USER_INFO')).isManager !== 0" placement="top" title="删除">
-            <a-tag
-              color="#f50"
-              @click="handleDelete(recored)"
-              :style="{
-                    'font-size': '16px',
-                    'margin-right': '8px',
-                    cursor: 'pointer'
-                  }"
-            >
-              <a-icon type="delete" />
             </a-tag>
           </a-tooltip>
         </span>
@@ -170,7 +83,7 @@
       placement="right"
       destroyOnClose
       :maskClosable="false"
-      width="40%"
+      width="60%"
       :closable="false"
       @close="onClose"
       :visible="visible"
@@ -183,7 +96,7 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
 import { channelOrder, adminFinList, orderExcel } from '@/api/channel'
-import { deleteOrder, customList } from '@/api/market'
+import { updateReturnedMoney } from '@/api/member'
 import Order from './Order.vue'
 import moment from 'moment'
 
@@ -198,12 +111,11 @@ export default class ChannelOrder extends Vue {
   private total!: number
   private current!: number
   private lists!: any
+  private saListlists!: any
   private columns!: any
   private dataSource!: any
   private visible!: boolean
   private recored!: any
-  private isSelect!: boolean
-  private isBtn!: boolean
   private title!: string
   private costs!: string
   private turnovers!: string
@@ -213,60 +125,58 @@ export default class ChannelOrder extends Vue {
   private outputTaxs!: string
   private profitPoints!: string
   private selectedRowKeys!: string
-  private orderData!: any[]
 
   private data() {
     return {
       spinning: false,
       form: {
         pageNo: 0, // 页数
-        orderNum: undefined, // 订单号
-        saleId: undefined, // 销售id
-        customId: undefined, // 客户id
-        finId: undefined, // 渠道id
-        accountName: undefined, //  公众号名称
-        orderStartTime: undefined, //  订单起始时间
-        orderEndTime: undefined, //  订单截止时间
-        scheduleStartTime: undefined, //  排期起始时间
-        scheduleEndTime: undefined, //  排期截止时间
-        orderState: 'a' //  排期截止时间
+        isUpdate: 1
       },
       selectedRowKeys: '',
+      moment,
       columns: [
         {
           title: '序号',
           dataIndex: 'key',
           align: 'center',
+          width: 80,
           fixed: 'left'
         },
         {
           title: '订单号',
           dataIndex: 'orderNum',
+          width: 200,
           align: 'center'
         },
         {
           title: '公众号',
           dataIndex: 'accountName',
+          width: 160,
           align: 'center'
         },
         {
           title: '回款客户',
           dataIndex: 'customName',
+          width: 240,
           align: 'center'
         },
         {
           title: '订单时间',
           dataIndex: 'createTime',
+          width: 200,
           align: 'center'
         },
         {
           title: '排期时间',
           dataIndex: 'schedule',
+          width: 180,
           align: 'center'
         },
         {
           title: '流水',
           dataIndex: 'turnover',
+          width: 120,
           align: 'center'
         },
         {
@@ -315,9 +225,14 @@ export default class ChannelOrder extends Vue {
           align: 'center'
         },
         {
+          title: '备注',
+          dataIndex: 'saleRemark',
+          width: 200,
+          align: 'center'
+        },
+        {
           title: '操作',
           dataIndex: 'edit',
-          width: '100px',
           scopedSlots: { customRender: 'edit' },
           align: 'center',
           fixed: 'right'
@@ -325,13 +240,17 @@ export default class ChannelOrder extends Vue {
       ],
       rules: {},
       dataSource: [],
-      total: 0,
+      total: 1,
       current: 1,
       lists: [],
+      saListlists: [],
+      stateList: [
+        { label: '全部', value: '' },
+        { label: '已修改', value: 1 },
+        { label: '未修改', value: 0 }
+      ],
       visible: false,
       recored: null,
-      isSelect: false,
-      isBtn: false,
       title: '查看详情',
       costs: undefined,
       turnovers: undefined,
@@ -339,8 +258,7 @@ export default class ChannelOrder extends Vue {
       finalProfits: undefined,
       rebates: undefined,
       outputTaxs: undefined,
-      profitPoints: undefined,
-      orderData: []
+      profitPoints: undefined
     }
   }
 
@@ -355,71 +273,19 @@ export default class ChannelOrder extends Vue {
               value: item.id
             }
           })
+          this.saListlists = res.saListlists.map((item: any) => {
+            return {
+              label: item.realName,
+              value: item.id
+            }
+          })
         }
       }
     })
 
     const { form } = this
-    const USER_INFO = JSON.parse(this.$ls.get('USER_INFO'))
-    // 超级管理员
-    if (USER_INFO.isManager === 1) {
-      this.getChannelOrder(form)
-      this.isSelect = false
-      this.isBtn = true
-      return
-    }
-    // 主管
-    if (USER_INFO.isManager === 2) {
-      form.saleId = USER_INFO.id
-      this.getChannelOrder(form)
-      this.isSelect = true
-      this.isBtn = true
-      this.form = form
-      return
-    }
-    // 普通
-    form.saleId = USER_INFO.id
     this.getChannelOrder(form)
-    this.isSelect = false
-    this.isBtn = false
     this.form = form
-  }
-
-  // change
-  private handleChange(value: string) {
-    this.form.customId = value
-  }
-
-  // 焦点
-  private handleFocus() {
-    this.orderData = []
-    if (this.form.customId) {
-      customList({
-        customName: (this.form.customId && this.form.customId.label) || ''
-      }).then((res: any) => {
-        if (res.code === 200) {
-          const data = res.customs.map((item: any) => ({
-            label: item.customName,
-            value: item.id
-          }))
-          this.orderData = data
-        }
-      })
-    }
-  }
-
-  // 搜索
-  private fetchUser(value: string) {
-    this.orderData = []
-    customList({ customName: value }).then((res: any) => {
-      if (res.code === 200) {
-        const data = res.customs.map((item: any) => ({
-          label: item.customName,
-          value: item.id
-        }))
-        this.orderData = data
-      }
-    })
   }
 
   // 订单日期
@@ -444,27 +310,6 @@ export default class ChannelOrder extends Vue {
     }
   }
 
-  // 查看今日
-  private handleNowday() {
-    const { form } = this
-    if (form) {
-      form.orderStartTime = moment()
-        .subtract(0, 'days')
-        .format('YYYY-MM-DD')
-      form.orderEndTime = moment()
-        .subtract(0, 'days')
-        .format('YYYY-MM-DD')
-
-      form.scheduleStartTime = undefined
-      form.scheduleEndTime = undefined
-      form.saleId = undefined
-
-      form.pageNo = 0
-      this.getChannelOrder(form)
-      this.form = form
-    }
-  }
-
   // 查看昨日
   private handleYesterday() {
     const { form } = this
@@ -484,19 +329,6 @@ export default class ChannelOrder extends Vue {
       this.getChannelOrder(form)
       this.form = form
     }
-  }
-
-  private handleDelete(recored: any) {
-    deleteOrder({ orderId: recored.id }).then((res: any) => {
-      if (res.code === 200) {
-        this.$message.success(res.message)
-        const { form } = this
-        this.getChannelOrder(form)
-        this.form = form
-      } else {
-        this.$message.error(res.message)
-      }
-    })
   }
 
   // 查看当月订单
@@ -556,24 +388,22 @@ export default class ChannelOrder extends Vue {
 
   // 查询
   private onSubmit() {
-    // console.log(this.form.scheduleStartTime)
-    (this.$refs.ruleForm as any).validate((valid: any) => {
+    console.log(this.form.scheduleStartTime)
+    ;(this.$refs.ruleForm as any).validate((valid: any) => {
       if (valid) {
-        const form = { ...this.form }
-        console.log(form)
+        const { form } = this
         form.pageNo = 0
-        // form.customId = form.customId.key
-        this.getChannelOrder({ ...form, customId: form.customId && form.customId.key })
-        // this.form = form
-        // this.$router
-        //   .replace({
-        //     query: {
-        //       pageNo: '1'
-        //     }
-        //   })
-        //   .catch(err => {
-        //     console.log(err)
-        //   })
+        this.getChannelOrder(form)
+        this.form = form
+        this.$router
+          .replace({
+            query: {
+              pageNo: '1'
+            }
+          })
+          .catch(err => {
+            console.log(err)
+          })
       } else {
         console.log('error submit!!')
         return false
@@ -616,7 +446,7 @@ export default class ChannelOrder extends Vue {
     this.visible = true
     if (isEdit) {
       this.recored = { ...recored, isEdit: true }
-      this.title = '编辑详情'
+      this.title = '查看修改'
     } else {
       this.recored = { ...recored, isEdit: false }
       this.title = '查看详情'
@@ -652,11 +482,107 @@ export default class ChannelOrder extends Vue {
     }
   }
 
+  // 修改Table日期
+  private handleChangeDate(date: any, dateString: string, key: number) {
+    const dataSource = [...this.dataSource]
+    const target = (dataSource as any).filter(
+      (item: any) => key === item.key
+    )[0]
+    if (target) {
+      target.orderPayTime = dateString
+      this.dataSource = dataSource
+    }
+  }
+
+  private saveDate(record: any) {
+    const dataSource = [...this.dataSource]
+    const target = (dataSource as any).filter(
+      (item: any) => record.key === item.key
+    )[0]
+    if (target) {
+      updateReturnedMoney({
+        orderId: record.key,
+        orderPayTime: target.orderPayTime,
+        returnedMoney: target.returnedMoney,
+        returningMoney: target.returningMoney
+      }).then((res: any) => {
+        if (res.code === 200) {
+          this.$message.success(res.message)
+          target.editableDate = false
+          this.dataSource = dataSource
+        } else {
+          this.$message.error(res.message)
+        }
+      })
+    }
+  }
+
+  private editDate(record: any) {
+    const dataSource = [...this.dataSource]
+    const target = (dataSource as any).filter(
+      (item: any) => record.key === item.key
+    )[0]
+    if (target) {
+      target.editableDate = true
+      this.dataSource = dataSource
+      console.log(target)
+    }
+  }
+
+  // 修改Table 回款
+  private handleChangeReturn(value: string, key: number) {
+    const dataSource = [...this.dataSource]
+    const target = (dataSource as any).filter(
+      (item: any) => key === item.key
+    )[0]
+    if (target) {
+      target.returnedMoney = value
+      target.returningMoney = target.turnover - target.returnedMoney
+      this.dataSource = dataSource
+    }
+  }
+
+  private saveReturn(record: any) {
+    console.log(record)
+    const dataSource = [...this.dataSource]
+    const target = (dataSource as any).filter(
+      (item: any) => record.key === item.key
+    )[0]
+    if (target) {
+      updateReturnedMoney({
+        orderId: record.key,
+        orderPayTime: target.orderPayTime,
+        returnedMoney: target.returnedMoney,
+        returningMoney: target.returningMoney
+      }).then((res: any) => {
+        if (res.code === 200) {
+          this.$message.success(res.message)
+          target.editable = false
+          this.dataSource = dataSource
+        } else {
+          this.$message.error(res.message)
+        }
+      })
+    }
+  }
+
+  private editReturn(key: number) {
+    const dataSource = [...this.dataSource]
+    const target = (dataSource as any).filter(
+      (item: any) => key === item.key
+    )[0]
+    if (target) {
+      target.editable = true
+      this.dataSource = dataSource
+      console.log(target)
+    }
+  }
+
   // 分页
   private onChangePage(pageNumber: number) {
     const { form } = this
     form.pageNo = +pageNumber - 1
-    this.getChannelOrder({ ...form, customId: form.customId && form.customId.key })
+    this.getChannelOrder(form)
     this.form = form
     this.$router
       .push({

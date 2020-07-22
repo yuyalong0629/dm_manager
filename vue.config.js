@@ -19,7 +19,7 @@ module.exports = {
     devtool: 'source-map'
   },
   css: {
-    sourceMap: true,
+    sourceMap: false,
     loaderOptions: {
       less: {
         modifyVars: {
@@ -38,7 +38,8 @@ module.exports = {
     historyApiFallback: true,
     proxy: {
       '/api': {
-        target: 'http://192.168.0.107:8089',
+        // target: 'http://192.168.0.106:8089',
+        target: 'http://192.168.0.202:8090',
         ws: false,
         changeOrigin: true,
         pathRewrite: {

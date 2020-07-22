@@ -149,7 +149,7 @@
         <a-col :span="20" :offset="3">
           <a-form-model-item>
             <a-button style="margin-right: 12px;" @click="handleCancel">取消</a-button>
-            <a-button type="primary" @click="handleSubmit">确定</a-button>
+            <a-button type="primary" :loading="loading" @click="handleSubmit">确定</a-button>
           </a-form-model-item>
         </a-col>
       </a-row>
@@ -174,12 +174,14 @@ export default class Order extends Vue {
 
   private form!: any
   private rules!: any
+  private loading!: boolean
 
   private data() {
     return {
+      loading: false,
       accountTypeList: [
-        { label: '自媒体', value: 1 },
-        { label: '营销号', value: 2 }
+        { label: '自媒体', value: 2 },
+        { label: '营销号', value: 1 }
       ],
       accountStateList: [
         { label: '订阅号', value: 1 },
@@ -336,6 +338,7 @@ export default class Order extends Vue {
   private handleSubmit() {
     ;(this.$refs.ruleForm as any).validate((valid: any) => {
       if (valid) {
+        this.loading = true
         const { form } = this
         addOrUpdate(form)
           .then((res: any) => {
@@ -349,6 +352,7 @@ export default class Order extends Vue {
           })
           .finally(() => {
             this.form = form
+            this.loading = false
           })
       } else {
         console.log('error submit!!')

@@ -7,6 +7,15 @@ import { constantRouterMap, asyncRouterMap } from './router.map'
 
 NProgress.configure({ showSpinner: false }) // NProgress Configuration
 
+// hack router push callback
+const originalPush = (VueRouter as any).prototype.push;
+(VueRouter as any).prototype.push = function push(location: any, onResolve?: any, onReject?: any): any {
+  if (onResolve || onReject) {
+    return originalPush.call(this, location, onResolve, onReject)
+    return originalPush.call(this, location).catch((err: any) => err)
+  }
+}
+
 Vue.use(VueRouter)
 
 const routes = [
@@ -22,13 +31,14 @@ const router = new VueRouter({
 })
 
 const whiteList = ['login'] // no redirect whitelist
-const defaultRoutePath = '/index/management'
+const defaultRoutePath = '/index/rank'
 
 router.beforeEach((to: any, from, next) => {
   NProgress.start() // start progress bar
   if (Vue.ls.get('USER_INFO')) {
     if (to.path === '/user/login') {
       next({ path: defaultRoutePath })
+      console.log(defaultRoutePath)
       NProgress.done()
     } else {
       const userInfo = store.getters.GET_STORAGE

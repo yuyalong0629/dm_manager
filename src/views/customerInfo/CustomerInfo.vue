@@ -25,7 +25,15 @@
 
       <div class="customer-info-edit">
         <a-button v-if="isImport" type="primary" @click="handleImport">导出</a-button>
-        <a-button v-if="isAllot" type="primary" @click="handleAllot">分配客户</a-button>
+        <div>
+          <a-button
+            v-if="isAllot"
+            type="primary"
+            :style="{marginRight: '12px'}"
+            @click="handleToday"
+          >查看今日</a-button>
+          <a-button v-if="isAllot" type="primary" @click="handleAllot">分配客户</a-button>
+        </div>
       </div>
 
       <a-table
@@ -62,6 +70,7 @@
       <br />
       <a-pagination
         showQuickJumper
+        :defaultPageSize="20"
         :total="total"
         :current="current"
         hideOnSinglePage
@@ -90,6 +99,46 @@
     >
       <Form :editList="editList" @onClose="onClose" />
     </a-drawer>
+
+    <!-- 客户信息追踪 -->
+    <a-drawer
+      title="客户信息追踪"
+      placement="right"
+      destroyOnClose
+      :maskClosable="false"
+      width="40%"
+      :closable="false"
+      @close="onCloseCust"
+      :visible="custvisible"
+    >
+      <a-row>
+        <a-col :span="24" :style="{marginBottom: '12px'}">
+          <a-list
+            :loading="loading"
+            :style="{maxHeight: '500px', overflow: 'auto'}"
+            bordered
+            size="small"
+            :data-source="dataList"
+          >
+            <a-list-item slot="renderItem" slot-scope="item">
+              <a-list-item-meta :description="item.createTime">
+                <span slot="title">{{item.remark}}</span>
+              </a-list-item-meta>
+            </a-list-item>
+          </a-list>
+        </a-col>
+        <a-col :span="12">
+          <a-textarea
+            placeholder="备注..."
+            v-model="remark"
+            :rows="4"
+            :style="{marginBottom: '12px'}"
+          />
+          <a-button @click="onCloseCust" :style="{marginRight: '12px'}">取消</a-button>
+          <a-button type="primary" @click="handleCustList">添加</a-button>
+        </a-col>
+      </a-row>
+    </a-drawer>
   </div>
 </template>
 
@@ -101,9 +150,12 @@ import {
   customInfoTab,
   adminSaleList,
   customAllot,
-  customExcel
+  customExcel,
+  customUpdateList,
+  customUpdateAdd
 } from '@/api/market'
 import { CustomInfoTabType } from '@/types/api'
+import moment from 'moment'
 
 interface DataSourceType {
   id?: number
@@ -144,11 +196,18 @@ export default class CustomerInfo extends Vue {
   private isAllot!: boolean
   private selectedRowKeys!: string
   private visibleModal!: boolean
+  private custvisible!: boolean
   private modalList!: ListType[]
+  private dataList?: any[]
+  private loading!: boolean
+  private customId!: number
+  private remark!: string
 
   private data() {
     return {
       visible: false,
+      custvisible: false,
+      loading: false,
       spinning: false,
       columns,
       dataSource: [],
@@ -157,7 +216,9 @@ export default class CustomerInfo extends Vue {
       params: {
         pageNo: 0,
         saleId: '',
-        customName: ''
+        customName: '',
+        createTimeStart: undefined,
+        createTimeEnd: undefined
       },
       lists: [],
       editList: [],
@@ -167,7 +228,10 @@ export default class CustomerInfo extends Vue {
       isAllot: true,
       selectedRowKeys: '',
       visibleModal: false,
-      modalList: []
+      modalList: [],
+      dataList: [],
+      customId: undefined,
+      remark: undefined
     }
   }
 
@@ -196,6 +260,8 @@ export default class CustomerInfo extends Vue {
 
   private isPermisson() {
     const { params } = this
+    params.createTimeStart = undefined
+    params.createTimeEnd = undefined
     const USER_INFO = JSON.parse(this.$ls.get('USER_INFO'))
     // 超级管理员
     if (USER_INFO.isManager === 1) {
@@ -256,6 +322,8 @@ export default class CustomerInfo extends Vue {
     const { params } = this
     params.saleId = value
     params.pageNo = 0
+    params.createTimeStart = undefined
+    params.createTimeEnd = undefined
     this.getCustomInfoTab(params)
     this.$router.replace({
       query: {
@@ -278,6 +346,8 @@ export default class CustomerInfo extends Vue {
       resolve()
     }).then(() => {
       const { params } = this
+      params.createTimeStart = undefined
+      params.createTimeEnd = undefined
       this.getCustomInfoTab(params)
       this.params = params
     })
@@ -288,6 +358,8 @@ export default class CustomerInfo extends Vue {
     const { params } = this
     params.customName = value
     params.pageNo = 0
+    params.createTimeStart = undefined
+    params.createTimeEnd = undefined
     this.getCustomInfoTab(params)
     this.$router.replace({
       query: {
@@ -298,8 +370,54 @@ export default class CustomerInfo extends Vue {
   }
 
   // 客户信息跟踪
-  private handleFollow(record: any) {
-    // this.visible = true
+  private async handleFollow(record: any) {
+    this.custvisible = await true
+    this.customId = record.id
+    this.getCustomUpdateList({ customId: record.id })
+  }
+
+  // 客户信息跟踪列表
+  getCustomUpdateList(params?: any) {
+    this.loading = true
+    return customUpdateList(params)
+      .then((res: any) => {
+        if (res.code === 200) {
+          this.dataList = res.customUpdates || []
+        }
+      })
+      .finally(() => {
+        this.loading = false
+      })
+  }
+
+  // 客户信息追踪添加
+  private handleCustList() {
+    const params = {
+      customId: this.customId,
+      remark: this.remark
+    }
+    customUpdateAdd(params).then((res: any) => {
+      if (res.code === 200) {
+        this.$message.success(res.message)
+        this.getCustomUpdateList({ customId: this.customId })
+      } else {
+        this.$message.error(res.message)
+      }
+    })
+  }
+
+  // 客户信息跟踪取消
+  private onCloseCust() {
+    new Promise((resolve, reject) => {
+      this.custvisible = false
+      resolve()
+    }).then(() => {
+      const { params } = this
+      params.createTimeStart = undefined
+      params.createTimeEnd = undefined
+      this.getCustomInfoTab(params)
+      this.params = params
+    })
   }
 
   // 编辑
@@ -343,6 +461,20 @@ export default class CustomerInfo extends Vue {
     }
   }
 
+  // 查看今日
+  private handleToday() {
+    const { params } = this
+    if (params) {
+      params.createTimeStart = moment().format('YYYY-MM-DD')
+      params.createTimeEnd = moment().format('YYYY-MM-DD')
+      params.pageNo = 0
+      params.customName = ''
+      params.saleId = ''
+    }
+    this.getCustomInfoTab(params)
+    this.params = params
+  }
+
   // 分配 click
   private handleOkModal(item: { label: string; value: number | string }) {
     const params = {
@@ -357,6 +489,8 @@ export default class CustomerInfo extends Vue {
           resolve()
         }).then(() => {
           const { params } = this
+          params.createTimeStart = undefined
+          params.createTimeEnd = undefined
           this.getCustomInfoTab(params)
           this.params = params
         })

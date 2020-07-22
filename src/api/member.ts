@@ -12,13 +12,32 @@ import { Api, TableList, AddOrUpdate, Type } from '../types/api'
 const api: Api = {
   tableClassList: '/api/adminType/index',
   tableInfoList: '/api/admin/index',
-  tableClassDelete: '/apiadminType/delete',
+  tableClassDelete: '/api/adminType/delete',
   addOrUpdate: '/api/admin/addOrUpdate',
   typeList: '/api/admin/typeList',
   enableAndDisable: '/api/admin/enableAndDisable',
   rank: '/api/statistics',
   updateFinalTarget: '/api/admin/updateFinalTarget',
-  classAddOrUpdate: '/api/adminType/addOrUpdate'
+  classAddOrUpdate: '/api/adminType/addOrUpdate',
+  classAdddetail: '/api/adminType/detail',
+  updateReturnedMoney: '/api/order/updateReturnedMoney',
+  updateOrderIndex: '/api/order/updateOrderIndex',
+  isLock: '/api/order/isLock'
+}
+
+/**
+ * @description: 是否锁定
+ * @param {string} username [用户名]
+ * @param {string} password [密码]
+ * @return: isLock
+ */
+
+export function isLock(parameter: any) {
+  return axios({
+    method: 'post',
+    url: api.isLock,
+    data: qs.stringify(parameter)
+  })
 }
 
 /**
@@ -143,5 +162,47 @@ export function classAddOrUpdate(parameter: any) {
     method: 'post',
     url: api.classAddOrUpdate,
     data: qs.stringify(parameter)
+  })
+}
+
+/**
+ * @description: 员工分类 => 查看详情
+ * @param {*}
+ * @return: classAdddetail
+ */
+
+export function classAdddetail(parameter: any) {
+  return axios({
+    method: 'get',
+    url: api.classAdddetail,
+    params: parameter
+  })
+}
+
+/**
+ * @description: 员工分类 => 修改
+ * @param {*}
+ * @return: updateReturnedMoney
+ */
+
+export function updateReturnedMoney(parameter: any) {
+  return axios({
+    method: 'post',
+    url: api.updateReturnedMoney,
+    data: qs.stringify(parameter)
+  })
+}
+
+/**
+ * @description: 员工分类 => 查看修改修改
+ * @param {*}
+ * @return: updateOrderIndex
+ */
+
+export function updateOrderIndex(parameter: any) {
+  return axios({
+    method: 'get',
+    url: api.updateOrderIndex,
+    params: parameter
   })
 }

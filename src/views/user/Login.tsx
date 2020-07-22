@@ -43,12 +43,7 @@ export default class User extends Vue {
 
             this.$router.push({ path: '/' })
             // 延迟 1 秒显示欢迎信息
-            setTimeout(() => {
-              this.$notification.success({
-                message: '欢迎',
-                description: `${timeFix()}，欢迎回来`
-              })
-            }, 1000)
+            window.location.reload()
           } else {
             this.$message.error(res.message)
           }
@@ -88,7 +83,7 @@ export default class User extends Vue {
           </a-form-item>
 
           <a-form-item>
-            <a-input
+            <a-input-password
               size="large"
               type="text"
               placeholder="请输入密码"
@@ -98,7 +93,7 @@ export default class User extends Vue {
               ]}
             >
               <a-icon slot="prefix" type="lock" style={{ color: 'rgba(0,0,0,.25)' }} />
-            </a-input>
+            </a-input-password>
           </a-form-item>
 
           <a-form-item style="margin-top:24px">

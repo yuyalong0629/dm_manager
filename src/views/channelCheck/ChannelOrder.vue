@@ -57,14 +57,14 @@
         </a-row>
       </a-form-model>
       <a-divider orientation="left">
-        总渠道成本：
+        总业绩：
         <a href="javascript:;">{{costs}}</a>
       </a-divider>
       <a-table :columns="columns" :dataSource="dataSource" :pagination="false">
         <span
           slot="taxType"
           slot-scope="text"
-        >{{ text === 1 ? '专三' : text === 2 ? '专六' : text === 3 ? '普票' : '不含税' }}</span>
+        >{{ text === 1 ? '专三' : text === 2 ? '专六' : text === 3 ? '普票' : text === 6 ? '专一' : '不含税' }}</span>
         <span slot="edit" slot-scope="text, recored">
           <a-tooltip
             v-if="recored.orderStatus === 0 && (JSON.parse($ls.get('USER_INFO')).id) !== recored.operateAdminId"
@@ -95,6 +95,7 @@
         showQuickJumper
         :total="total"
         :current="current"
+        :defaultPageSize="20"
         hideOnSinglePage
         @change="onChangePage"
       />
@@ -345,7 +346,7 @@ export default class ChannelOrder extends Vue {
       .then((res: any) => {
         if (res.code === 200) {
           this.spinning = false
-          this.costs = res.costs
+          this.costs = res.finalProfits
           this.dataSource = res.page.result.map((item: any) => {
             return {
               ...item,

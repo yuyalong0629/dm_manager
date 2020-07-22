@@ -123,7 +123,7 @@
               <a-icon type="container" />
             </a-tag>
           </a-tooltip>
-          <a-tooltip placement="right" title="评论留言">
+          <!-- <a-tooltip placement="right" title="评论留言">
             <a-tag
               color="#87d068"
               :style="{
@@ -134,7 +134,7 @@
             >
               <a-icon type="edit" />
             </a-tag>
-          </a-tooltip>
+          </a-tooltip> -->
         </span>
         <span slot="accountType" slot-scope="text">{{ text === 1 ? '营销号' : '自媒体' }}</span>
         <span slot="accountState" slot-scope="text">{{ text === 1 ? '订阅号' : '服务号' }}</span>
@@ -142,6 +142,7 @@
       <br />
       <a-pagination
         showQuickJumper
+        :defaultPageSize="20"
         :total="total"
         :current="current"
         hideOnSinglePage
@@ -168,7 +169,12 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
 import { CustomerIndexType } from '@/types/api'
-import { customerIndex, customerType, accountExcel } from '@/api/market'
+import {
+  customerIndex,
+  customerType,
+  accountExcel,
+  accountClick
+} from '@/api/market'
 import columns from './columns'
 import Order from './Order.vue'
 
@@ -368,6 +374,9 @@ export default class CustomerAccounts extends Vue {
     if (edit === '1') {
       this.recored = { ...recored, edit: '1' }
       this.title = '查看详情'
+      accountClick({ accountId: recored.id }).then((res: any) => {
+        console.log(res)
+      })
     }
     if (edit === '3') {
       this.recored = { ...recored, edit: '3' }

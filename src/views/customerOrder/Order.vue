@@ -116,6 +116,7 @@
               v-model="order.taxType"
               style="width: 220px;"
             >
+              <a-select-option value="6">专一</a-select-option>
               <a-select-option value="1">专三</a-select-option>
               <a-select-option value="2">专六</a-select-option>
               <a-select-option value="3">普票</a-select-option>
@@ -141,7 +142,7 @@
         <a-col :span="20" :offset="4" style="margin-top: 12px;">
           <a-form-model-item>
             <a-button style="margin-right: 24px;" @click="handleCancel">取消</a-button>
-            <a-button type="primary" @click="handleSubmit">确定</a-button>
+            <a-button type="primary" :loading="loading" @click="handleSubmit">确定</a-button>
           </a-form-model-item>
         </a-col>
       </a-row>
@@ -174,9 +175,11 @@ export default class Order extends Vue {
   private orderDataFin!: any[]
   private value?: ValueType
   private order!: any
+  private loading!: boolean
 
   private data() {
     return {
+      loading: false,
       accountInfo: [],
       orderData: [],
       orderDataFin: [],
@@ -211,7 +214,6 @@ export default class Order extends Vue {
         orderDetail({ orderId: value.id }).then((res: any) => {
           if (res.code === 200) {
             Object.assign(this.order, res.order)
-            console.log(this.order)
             const { order } = this
             if (order) {
               order.taxType =
@@ -221,14 +223,17 @@ export default class Order extends Vue {
                   ? '专六'
                   : order.taxType === 3
                   ? '普票'
+                  : order.taxType === 6
+                  ? '专一'
                   : '无'
+              order.isIssueZ = order.isIssue === 1
+
               order.customIdZ = {
                 label: order.customName,
                 value: order.customId
               }
               order.schedule = moment(order.schedule)
               this.order = order
-              console.log(this.order)
             }
           }
         })
@@ -351,6 +356,10 @@ export default class Order extends Vue {
       order.taxation = (+order.cost * 0.06).toFixed(2)
     }
 
+    if (order.taxType === '6') {
+      order.taxation = (+order.cost * 0.01).toFixed(2)
+    }
+
     // 计算净利润
     order.finalProfit = (
       +order.profit -
@@ -432,6 +441,10 @@ export default class Order extends Vue {
       order.taxation = ((+order.cost || 0) * 0.06).toFixed(2)
     }
 
+    if (value === '6') {
+      order.taxation = ((+order.cost || 0) * 0.01).toFixed(2)
+    }
+
     // 计算净利润
     order.finalProfit = (
       +order.profit -
@@ -454,7 +467,6 @@ export default class Order extends Vue {
     const { order } = this
     order.schedule = moment(dateString)
     this.order = order
-    console.log(dateString)
   }
 
   // 提交
@@ -475,9 +487,11 @@ export default class Order extends Vue {
         ? 2
         : order.taxType === '普票'
         ? 3
+        : order.taxType === '专一'
+        ? 6
         : 5
-    console.log(order)
 
+    this.loading = true
     addOrderUpdate(order)
       .then((res: any) => {
         if (res.code === 200) {
@@ -491,6 +505,7 @@ export default class Order extends Vue {
       .finally(() => {
         order.schedule = moment(order.schedule)
         this.order = order
+        this.loading = false
       })
   }
 

@@ -51,14 +51,12 @@ export default class Rank extends Vue {
         this.dutyList = res.adminList.filter((item: DutyListType) => item.isManager === 2)
 
         const imgList = [require('@/assets/image/one.png'), require('@/assets/image/two.png'), require('@/assets/image/three.png')]
-        this.adminList = res.adminList.filter((item: DutyListType) => item.isManager === 0).slice(0, 3).map((item: any, i: number) => {
-          return {
-            ...item, img: imgList[i]
-          }
+        const normalList = res.adminList.filter((item: any) => item.isManager === 0)
+        console.log(normalList)
+        this.adminList = normalList.slice(0, 3).map((item: any, index: number) => {
+          return { ...item, img: imgList[index] }
         })
-        this.normalList = res.adminList.slice(4)
-
-        console.log(this.normalList)
+        this.normalList = normalList.slice(3)
       }
     }).finally(() => {
       this.spinning = false
